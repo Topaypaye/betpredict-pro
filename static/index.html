@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BetPredict Pro - Advanced Soccer & Tennis Predictor</title>
+  <meta name="description" content="All-around advanced statistical prediction engine for European football leagues and ATP/WTA tennis. Multi-variable Dixon-Coles xG, Elo, Poisson, form and odds analysis.">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#10b981">
+  <link rel="icon" type="image/svg+xml" href="/static/icon.svg">
+  <link rel="stylesheet" href="/static/style.css?v=12">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 512 512">
+        <circle cx="256" cy="256" r="220" fill="none" stroke="#10b981" stroke-width="36"/>
+        <path d="M170 340 L230 250 L290 290 L350 170" fill="none" stroke="#10b981" stroke-width="36" stroke-linecap="round"/>
+        <circle cx="350" cy="170" r="24" fill="#38bdf8"/>
+      </svg>
+      <h1>BetPredict Pro</h1>
+      <span id="bgSyncBadge" class="sync-badge syncing" title="Pre-loading all sports tabs in the background for instant navigation">
+        ⚡ Syncing tabs...
+      </span>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="football" id="tabFootball">
+        ⚽ Football
+      </button>
+      <button class="nav-tab" data-tab="nba" id="tabNba">
+        🏀 NBA
+      </button>
+      <button class="nav-tab" data-tab="tennis" id="tabTennis">
+        🎾 Tennis
+      </button>
+      <button class="nav-tab" data-tab="calendar" id="tabCalendar">
+        🗓️ Daily Top 3 Safe
+      </button>
+      <button class="nav-tab" data-tab="models" id="tabModels">
+        ⚖️ Variables & Logic
+      </button>
+      <button class="nav-tab" data-tab="docs" id="tabDocs">
+        📘 Model Guide
+      </button>
+      <button class="nav-tab" data-tab="backtest" id="tabBacktest">
+        📈 Backtest & Track
+      </button>
+    </nav>
+  </header>
+
+  <!-- Football Leagues Sub-nav -->
+  <div class="sub-nav" id="footballSubNav">
+    <button class="pill-btn active" data-league="EPL">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</button>
+    <button class="pill-btn" data-league="LALIGA">🇪🇸 LaLiga</button>
+    <button class="pill-btn" data-league="SERIEA">🇮🇹 Serie A</button>
+    <button class="pill-btn" data-league="BUNDESLIGA">🇩🇪 Bundesliga</button>
+    <button class="pill-btn" data-league="LIGUE1">🇫🇷 Ligue 1</button>
+    <button class="pill-btn" data-league="UCL">🇪🇺 Champions League</button>
+    <button class="pill-btn" data-league="UEL">🇪🇺 Europa League</button>
+    <button class="pill-btn" data-league="NATIONS">🌐 Nations League</button>
+  </div>
+
+  <main>
+    <!-- Football View -->
+    <section id="viewFootball">
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem;">
+        <h2 id="leagueTitle">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League Fixtures</h2>
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <div class="conf-filter-bar" id="footballConfFilter">
+            <button class="conf-pill active" data-conf="ALL">All Conf</button>
+            <button class="conf-pill" data-conf="High">🟢 High</button>
+            <button class="conf-pill" data-conf="Medium">🟡 Mid</button>
+            <button class="conf-pill" data-conf="Low">⚪ Low</button>
+          </div>
+          <button class="pill-btn" id="btnToggleAllSections" title="Expand or collapse all matchday sections" style="font-size:0.8rem; padding:0.35rem 0.75rem;">
+            ↕ Toggle All
+          </button>
+          <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:0.3rem;">
+            <input type="checkbox" id="chkFinished" checked> Show finished
+          </label>
+          <button class="pill-btn" id="btnRefreshFootball">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div id="fixturesList">
+        <div class="state-box">
+          <div class="spinner"></div>
+          <p>Loading European fixtures & statistical calculations...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tennis View -->
+    <section id="viewTennis" style="display:none;">
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem;">
+        <h2>🎾 Live & Upcoming Tennis Matches (ATP / WTA)</h2>
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <div class="conf-filter-bar" id="tennisConfFilter">
+            <button class="conf-pill active" data-conf="ALL">All Conf</button>
+            <button class="conf-pill" data-conf="High">🟢 High</button>
+            <button class="conf-pill" data-conf="Medium">🟡 Mid</button>
+            <button class="conf-pill" data-conf="Low">⚪ Low</button>
+          </div>
+          <button class="pill-btn" id="btnToggleAllTennis" title="Expand or collapse all tournament sections" style="font-size:0.8rem; padding:0.35rem 0.75rem;">
+            ↕ Toggle All
+          </button>
+          <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:0.3rem;">
+            <input type="checkbox" id="chkUpcomingTennis"> Scheduled only
+          </label>
+          <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:0.3rem;">
+            <input type="checkbox" id="chkHideTbdTennis" checked> Hide TBD
+          </label>
+          <button class="pill-btn" id="btnRefreshTennis">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div id="tennisFilesNotice" style="margin-bottom:1rem; display:none;"></div>
+
+      <div id="tennisList">
+        <div class="state-box">
+          <div class="spinner"></div>
+          <p>Loading ATP & WTA tournament draws...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- NBA View -->
+    <section id="viewNba" style="display:none;">
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem;">
+        <h2>🏀 NBA Games & Predictions</h2>
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <div class="conf-filter-bar" id="nbaConfFilter">
+            <button class="conf-pill active" data-conf="ALL">All Conf</button>
+            <button class="conf-pill" data-conf="High">🟢 High</button>
+            <button class="conf-pill" data-conf="Medium">🟡 Mid</button>
+            <button class="conf-pill" data-conf="Low">⚪ Low</button>
+          </div>
+          <button class="pill-btn" id="btnToggleAllNba" title="Expand or collapse all gameday sections" style="font-size:0.8rem; padding:0.35rem 0.75rem;">
+            ↕ Toggle All
+          </button>
+          <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:0.3rem;">
+            <input type="checkbox" id="chkFinishedNba" checked> Show finished
+          </label>
+          <button class="pill-btn" id="btnRefreshNba">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div id="nbaList">
+        <div class="state-box">
+          <div class="spinner"></div>
+          <p>Loading NBA games, Elo ratings & net efficiency models...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Model Coefficients & Live Winrate Simulator View -->
+    <section id="viewModels" style="display:none;">
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <h2>⚖️ Variables, Logic &amp; Live Winrate Simulator</h2>
+          <p style="color:var(--text-muted); font-size:0.84rem; margin-top:0.25rem;">
+            Drag any slider to preview its exact impact on out-of-sample <strong>Prediction Winrate %</strong>, High-Confidence accuracy, and Value ROI before saving.
+          </p>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          <div class="conf-filter-bar" id="simSportBar">
+            <button class="conf-pill active" data-simsport="football">⚽ Football</button>
+            <button class="conf-pill" data-simsport="nba">🏀 NBA</button>
+            <button class="conf-pill" data-simsport="tennis">🎾 Tennis</button>
+          </div>
+          <button class="pill-btn" id="btnOptimizeWeights" style="border-color:rgba(168,85,247,0.45); color:#c084fc;" title="Search for the combination with the highest out-of-sample winrate %">✨ Find Max Winrate</button>
+          <button class="pill-btn active" id="btnApplyWeights" style="display:none; background:var(--primary); color:#fff; border-color:var(--primary);">💾 Apply &amp; Save</button>
+          <button class="pill-btn" id="btnResetWeights">↺ Reset to Tuned</button>
+        </div>
+      </div>
+
+      <div class="sim-workspace">
+        <!-- Left Column: Interactive Sliders -->
+        <div class="sim-controls-col">
+          <div class="weight-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+              <h3 style="font-size:0.95rem; color:var(--accent-blue);">Market vs Statistical Model Blend</h3>
+              <span id="simBlendSplitBadge" class="badge badge-blue">65% Market / 35% Stats</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">
+              How much weight is given to de-vigged bookmaker odds vs your internal statistical model.
+            </p>
+            <div class="slider-group">
+              <div class="slider-label">
+                <span id="lblSimMarketTitle">Market Share</span>
+                <span id="lblSimMarketShare" style="color:var(--accent-blue)">65%</span>
+              </div>
+              <input type="range" class="slider-input" id="rngSimMarketShare" min="0" max="1" step="0.05" value="0.65">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label">
+                <span>Value Bet Min Edge</span>
+                <span id="lblValueEdge" style="color:var(--primary)">+4.0%</span>
+              </div>
+              <input type="range" class="slider-input" id="rngValueEdge" min="0.01" max="0.15" step="0.01" value="0.04">
+            </div>
+          </div>
+
+          <div class="weight-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+              <h3 id="simVarsTitle" style="font-size:0.95rem; color:var(--primary);">Statistical Variables</h3>
+              <span style="font-size:0.7rem; color:var(--text-dim);">Auto-normalized to 100%</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">
+              Adjust the relative importance of each statistical sub-model.
+            </p>
+            <div id="simSlidersContainer"></div>
+          </div>
+
+          <div class="weight-card" id="simSituationalCard">
+            <h3 style="font-size:0.92rem; margin-bottom:0.4rem; color:var(--accent-amber);">Active Situational Multipliers</h3>
+            <div id="simSituationalList" style="font-size:0.78rem; display:flex; flex-direction:column; gap:0.45rem; margin-top:0.5rem;"></div>
+          </div>
+        </div>
+
+        <!-- Right Column: Live Backtest Consequence Panel -->
+        <div class="sim-impact-col">
+          <div id="simStatusBanner" class="sim-status-banner">
+            <span id="simSampleLabel">Loading historical evaluation dataset...</span>
+            <span id="simStatePill" class="badge badge-blue">Baseline</span>
+          </div>
+
+          <!-- 4 Big Consequence KPIs -->
+          <div class="sim-kpi-grid">
+            <div class="weight-card sim-kpi-card">
+              <div class="sim-kpi-title">PREDICTION WINRATE %</div>
+              <div class="sim-kpi-row">
+                <span id="simWinrate" class="sim-kpi-val" style="color:var(--primary);">-</span>
+                <span id="simWinrateDelta" class="sim-delta neutral">-</span>
+              </div>
+              <div id="simWinrateSub" class="sim-kpi-sub">vs Tuned Default</div>
+            </div>
+
+            <div class="weight-card sim-kpi-card">
+              <div id="simHcTitle" class="sim-kpi-title">HIGH-CONFIDENCE WINRATE</div>
+              <div class="sim-kpi-row">
+                <span id="simHcWinrate" class="sim-kpi-val" style="color:var(--accent-purple);">-</span>
+                <span id="simHcDelta" class="sim-delta neutral">-</span>
+              </div>
+              <div id="simHcSub" class="sim-kpi-sub">High confidence subset</div>
+            </div>
+
+            <div class="weight-card sim-kpi-card">
+              <div class="sim-kpi-title">VALUE BETS ROI</div>
+              <div class="sim-kpi-row">
+                <span id="simVbRoi" class="sim-kpi-val" style="color:var(--accent-amber);">-</span>
+                <span id="simVbDelta" class="sim-delta neutral">-</span>
+              </div>
+              <div id="simVbSub" class="sim-kpi-sub">Flat 1u staking</div>
+            </div>
+
+            <div class="weight-card sim-kpi-card">
+              <div class="sim-kpi-title">LOG-LOSS (CALIBRATION)</div>
+              <div class="sim-kpi-row">
+                <span id="simLogLoss" class="sim-kpi-val" style="color:var(--accent-blue);">-</span>
+                <span id="simLogLossDelta" class="sim-delta neutral">-</span>
+              </div>
+              <div class="sim-kpi-sub">Lower = sharper probabilities</div>
+            </div>
+          </div>
+
+          <!-- Confidence Tier Comparison Table -->
+          <div class="weight-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+              <h3 style="font-size:0.95rem; color:var(--text-main);">📊 Winrate Breakdown by Confidence Tier</h3>
+              <span style="font-size:0.74rem; color:var(--text-muted);">Compares your tweaked sliders vs Tuned Default</span>
+            </div>
+            <div class="data-table-container" style="border-radius:8px;">
+              <table class="data-table" id="simTiersTable">
+                <thead>
+                  <tr>
+                    <th>Confidence Tier</th>
+                    <th>Sample Size</th>
+                    <th>Tweaked Winrate</th>
+                    <th>Tuned Default</th>
+                    <th>Net Impact</th>
+                  </tr>
+                </thead>
+                <tbody id="simTiersBody">
+                  <tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Running simulation...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Component Standalone Leaderboard -->
+          <div class="weight-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+              <h3 style="font-size:0.95rem; color:var(--text-main);">🏆 Individual Variable Standalone Accuracy</h3>
+              <span style="font-size:0.74rem; color:var(--text-muted);">How accurate each variable is on its own (give more weight to top performers)</span>
+            </div>
+            <div id="simCompLeaderboard" class="sim-leaderboard"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Backtest & Track Record View -->
+    <section id="viewBacktest" style="display:none;">
+      <div class="section-title">
+        <h2>📈 Walk-Forward Backtest Verification & Live Track Record</h2>
+        <div style="display:flex; gap:0.4rem;">
+          <button class="pill-btn active" id="btnBtFootball" data-sport="football">⚽ Football (2022-27)</button>
+          <button class="pill-btn" id="btnBtNba" data-sport="nba">🏀 NBA (2022-26)</button>
+          <button class="pill-btn" id="btnBtTennis" data-sport="tennis">🎾 Tennis (2021-26)</button>
+        </div>
+      </div>
+
+      <div class="weights-grid" style="margin-bottom:1.5rem;">
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.8rem;">OUT-OF-SAMPLE TEST GAMES</h4>
+          <p id="statTestMatches" style="font-size:1.8rem; font-weight:800; color:var(--accent-blue);">-</p>
+          <p style="font-size:0.75rem; color:var(--text-dim);">Trained on 2022-25, tested on 2025-27</p>
+        </div>
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.8rem;">MODEL ACCURACY</h4>
+          <p id="statAccuracy" style="font-size:1.8rem; font-weight:800; color:var(--primary);">-</p>
+          <p id="statAccuracySub" style="font-size:0.75rem; color:var(--text-dim);">vs 44.2% league baseline</p>
+        </div>
+        <div class="weight-card" id="cardBtHomeAcc" style="display:none;">
+          <h4 style="color:var(--text-muted); font-size:0.8rem;">🏠 BACKING HOME TEAM</h4>
+          <p id="statHomeAcc" style="font-size:1.8rem; font-weight:800; color:var(--primary);">-</p>
+          <p id="statHomeAccSub" style="font-size:0.75rem; color:var(--text-dim);">Win rate when picking Home</p>
+        </div>
+        <div class="weight-card" id="cardBtAwayAcc" style="display:none;">
+          <h4 style="color:var(--text-muted); font-size:0.8rem;">✈️ BACKING AWAY TEAM</h4>
+          <p id="statAwayAcc" style="font-size:1.8rem; font-weight:800; color:var(--accent-blue);">-</p>
+          <p id="statAwayAccSub" style="font-size:0.75rem; color:var(--text-dim);">Win rate when picking Away</p>
+        </div>
+        <div class="weight-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="color:var(--text-muted); font-size:0.8rem;">CONFIDENCE &ge;<span id="lblBtConfVal" style="color:var(--accent-blue);">60%</span> WIN RATE</h4>
+          </div>
+          <p id="statConfWinRate" style="font-size:1.8rem; font-weight:800; color:var(--accent-purple);">-</p>
+          <input type="range" class="slider-input" id="rngBtConf" min="35" max="85" step="1" value="60" style="margin:0.35rem 0 0.25rem 0;">
+          <p id="statConfSample" style="font-size:0.75rem; color:var(--text-dim);">Slide to filter confidence threshold</p>
+        </div>
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.8rem;">VALUE BETS (&ge;4% EDGE) ROI</h4>
+          <p id="statValueRoi" style="font-size:1.8rem; font-weight:800; color:var(--accent-amber);">-</p>
+          <p style="font-size:0.75rem; color:var(--text-dim);">Out-of-sample flat 1-unit staking</p>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <h3 style="font-size:1.05rem;">Recent Out-of-Sample Test Matches</h3>
+        <div id="drawFilterContainer" style="display:flex; align-items:center; gap:0.5rem;">
+          <label style="font-size:0.82rem; color:var(--text-muted); cursor:pointer; display:flex; align-items:center; gap:0.35rem; background:#1e293b; padding:0.35rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+            <input type="checkbox" id="chkExcludeDraws"> 🚫 Exclude Draws (Decisive Outcomes Only)
+          </label>
+        </div>
+      </div>
+      <div class="data-table-container">
+        <table class="data-table" id="tableBacktest">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>League</th>
+              <th>Match</th>
+              <th>Score</th>
+              <th>Model Probs (H / D / A)</th>
+              <th>Model Pick</th>
+              <th>Actual</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="backtestRows">
+            <tr><td colspan="8" style="text-align:center;">Loading backtest data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Model Guide & Documentation View -->
+    <section id="viewDocs" style="display:none;">
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem;">
+        <h2>📘 Complete Mathematical & Algorithmic Model Guide</h2>
+        <span style="font-size:0.8rem; color:var(--text-muted); background:#1e293b; padding:0.35rem 0.75rem; border-radius:6px; border:1px solid var(--border);">
+          Multi-Sport Quantitative Engine
+        </span>
+      </div>
+
+      <div class="docs-subnav" id="docsSubNav">
+        <button class="pill-btn active" data-doc="docOverview">🌟 Architecture & Overview</button>
+        <button class="pill-btn" data-doc="docNba">🏀 NBA Methodology</button>
+        <button class="pill-btn" data-doc="docFootball">⚽ Football Methodology</button>
+        <button class="pill-btn" data-doc="docTennis">🎾 Tennis Methodology</button>
+        <button class="pill-btn" data-doc="docInjuries">🩹 Injury & Absence Engine</button>
+        <button class="pill-btn" data-doc="docStaking">💰 Value Bets & Staking</button>
+      </div>
+
+      <div class="docs-container" style="margin-top:1.25rem;">
+
+        <!-- 1. Overview & Architecture -->
+        <div class="docs-card doc-content-block" id="docOverview">
+          <h3>🌟 Two-Tier Modeling Architecture</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+            BetPredict Pro uses a rigorous <strong>two-tier quantitative framework</strong> that unifies independent, fundamental statistical models with de-vigged bookmaker market consensus. Rather than relying blindly on public odds or naive statistics, the system evaluates both tiers separately before blending them.
+          </p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1rem;">
+            <div style="background:#0f172a; padding:1.1rem; border-radius:10px; border:1px solid var(--border-light);">
+              <h4 style="color:var(--primary); font-size:0.95rem; margin-bottom:0.4rem;">Tier 1: Pure Statistical Model (P_stats)</h4>
+              <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.5;">
+                Completely independent of bookmaker lines. Evaluates historical Elo ratings, expected scoring margins (xG / PPG), Morey Pythagorean expectations, recent form momentum, home/road splits, venue fatigue, and real-time player injuries.
+              </p>
+            </div>
+            <div style="background:#0f172a; padding:1.1rem; border-radius:10px; border:1px solid var(--border-light);">
+              <h4 style="color:var(--accent-blue); font-size:0.95rem; margin-bottom:0.4rem;">Tier 2: De-Vigged Market Consensus (P_market)</h4>
+              <p style="font-size:0.82rem; color:var(--text-muted); line-height:1.5;">
+                Captures the collective wisdom of closing and live lines across sharp bookmakers (DraftKings, Winamax.fr, Pinnacle). The bookmaker's profit margin (the "vig") is stripped using power and multiplicative normalization to reveal true market implied probabilities.
+              </p>
+            </div>
+          </div>
+
+          <h4>The Blending Equation</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem;">
+            The final prediction balances independent statistical edge with market efficiency:
+          </p>
+          <div class="formula-box">
+P_final = (1 - Market_Share) * P_stats + Market_Share * P_market
+
+<span class="comment">// Default Market Shares:</span>
+<span class="comment">// Football: 15% Market / 85% Statistical Model</span>
+<span class="comment">// NBA:      30% Market / 70% Statistical Model</span>
+<span class="comment">// Tennis:   35% Market / 65% Statistical Model</span>
+          </div>
+
+          <div class="doc-callout doc-callout-info">
+            <strong>🛡️ The Injury-Divergence Overrule Rule:</strong>
+            Bookmaker market odds frequently suffer from "reputation lag" and casual betting inertia when major superstars are ruled out late. When the statistical model projects a team to lose (P_stats &lt; 0.50) due to severe net star injuries (&ge; 2.5 pts), but public odds still favor them (P_market &gt; 0.50), the system automatically discounts the bookmaker line and trusts the Statistical Model.
+          </div>
+        </div>
+
+        <!-- 2. NBA Methodology -->
+        <div class="docs-card doc-content-block" id="docNba" style="display:none;">
+          <h3>🏀 NBA Quantitative Methodology</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+            The NBA engine utilizes five statistical sub-components combined with automated point-in-time sequential processing, eliminating look-ahead bias and blowout distortion.
+          </p>
+
+          <h4>1. Point-in-Time Sequential FiveThirtyEight Elo (Weight: 32%)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Elo is updated match-by-match chronologically. Every past game is evaluated using only the Elo ratings and records established <em>prior to that specific kickoff</em>.
+          </p>
+          <div class="formula-box">
+MOV_Multiplier = (|Actual_Margin| + 3.0)^0.8 / (7.5 + 0.006 * |Elo_Diff|)
+Shift = 20.0 * MOV_Multiplier * (Actual_Win - Expected_Win)
+Elo_New = Elo_Old + Shift
+
+<span class="comment">// Parameters:</span>
+<span class="comment">// K-Factor = 20.0</span>
+<span class="comment">// Home-Court Advantage (HCA) = +50.0 Elo (~2.2 points expected margin)</span>
+<span class="comment">// Offseason Mean Reversion = 45% pull toward 1500 league average</span>
+          </div>
+
+          <h4>2. Net Rating & Projected Score with Blowout Cap (Weight: 28%)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Computes expected offensive and defensive PPG, smoothed with 14-game prior shrinkage and an 18-point Margin of Victory (MOV) cap to prevent isolated blowouts from distorting ratings.
+          </p>
+          <div class="formula-box">
+Proj_Home = 0.5 * (Off_Home + Def_Away) + 0.5 * HCA_pts + 0.5 * Total_Situational_pts
+Proj_Away = 0.5 * (Off_Away + Def_Home) - 0.5 * HCA_pts - 0.5 * Total_Situational_pts
+Proj_Margin = Proj_Home - Proj_Away
+
+P(Home) = 0.5 * [ 1 + erf( Proj_Margin / (11.5 * sqrt(2)) ) ]
+<span class="comment">// Standard deviation of NBA game margin: sigma = 11.5 points</span>
+          </div>
+
+          <h4>3. Morey Pythagorean Expectation & Log5 (Weight: 14%)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Uses Daryl Morey's empirically calibrated NBA exponent (13.91). Game-day absences directly subtract from projected scoring capability:
+          </p>
+          <div class="formula-box">
+Pyth_Win% = (Points_For^13.91) / (Points_For^13.91 + Points_Against^13.91)
+Log5_P(Home) = [ Pyth_H * (1 - Pyth_A) * 0.54 ] / [ Num + (1 - Pyth_H) * Pyth_A * 0.46 ]
+<span class="comment">// Calibrated to modern NBA baseline home win rate of ~54.0%</span>
+          </div>
+
+          <h4>4. Form (Streak Momentum) & Home/Road Splits (Weight: 14% + 12%)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Form models last-10 game momentum augmented with an active streak bonus (capped at &plusmn;5 games). Home/Road isolates home win percentage in home games vs road win percentage in away games.
+          </p>
+
+          <h4>NBA Parameter Reference Table</h4>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Parameter</th><th>Value</th><th>Function</th><th>Impact</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>elo_k</code></td><td>20.0</td><td>Elo speed coefficient</td><td>Controls how much ratings shift per game</td></tr>
+              <tr><td><code>elo_hca</code></td><td>50.0 Elo (~2.2 pts)</td><td>Home-court advantage</td><td>Prevents over-favoring home teams in modern NBA</td></tr>
+              <tr><td><code>prior_games</code></td><td>14.0 games</td><td>PPG shrinkage baseline</td><td>Protects early-season ratings from sample-size noise</td></tr>
+              <tr><td><code>mov_cap</code></td><td>18.0 pts</td><td>Blowout margin ceiling</td><td>Prevents 30-pt garbage-time blowouts from warping Net Rating</td></tr>
+              <tr><td><code>margin_sigma</code></td><td>11.5 pts</td><td>Margin standard deviation</td><td>Converts projected margin into win probability via Normal CDF</td></tr>
+              <tr><td><code>pyth_exp</code></td><td>13.91</td><td>Morey basketball exponent</td><td>Converts point ratio into expected win frequency</td></tr>
+              <tr><td><code>b2b_penalty_pts</code></td><td>-2.2 pts</td><td>Back-to-back rest penalty</td><td>Applied when team has 0 days of rest and opponent has &ge; 2</td></tr>
+              <tr><td><code>injury_pts_per_star</code></td><td>-2.8 pts</td><td>Point penalty per star unit</td><td>Translates player absence tiers directly into score margins</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3. Football Methodology -->
+        <div class="docs-card doc-content-block" id="docFootball" style="display:none;">
+          <h3>⚽ European Football Quantitative Methodology</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+            European soccer utilizes a multi-variable Poisson framework, modeling 3-way outcomes (Home Win, Draw, Away Win) alongside goal markets (Over/Under 2.5).
+          </p>
+
+          <h4>1. Dixon-Coles Bivariate Poisson Matrix (Weight: 21%)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Independent Poisson models underestimate draws. The Dixon-Coles adjustment applies a low-score correlation parameter (&rho; = -0.11) across a 10&times;10 scoreline matrix:
+          </p>
+          <div class="formula-box">
+Lambda_Home = Attack_Home * Defense_Away * Home_Pitch_Factor
+Mu_Away     = Attack_Away * Defense_Home
+
+P(Score = i, j) = Poisson(i, Lambda) * Poisson(j, Mu) * Tau_rho(i, j)
+<span class="comment">// Tau adjustment increases 0-0 and 1-1 draws while lowering 1-0 and 0-1</span>
+          </div>
+
+          <h4>2. Dual xG and Real Goal EWMA Engines (Weight: 21% + 22%)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Expected Goals (xG) strip finishing luck to evaluate underlying chance quality. Ratings update with an Exponentially Weighted Moving Average (&alpha; = 0.085, ~12 match memory).
+          </p>
+
+          <h4>3. Football FiveThirtyEight Elo (Weight: 23%)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Operates with K = 22.0, Home Field Advantage of +46 Elo points, and goal-margin multipliers (1.0 for 1 goal, 1.5 for 2 goals, 1.75 for 3+ goals).
+          </p>
+
+          <h4>Football Situational Adjustments Table</h4>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Situational Factor</th><th>Adjustment</th><th>Rationale</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Key Player Missing</td><td>-3.5% own xG (cap -15%)</td><td>Accounts for starting striker/centerback absence</td></tr>
+              <tr><td>Promoted Team Prior</td><td>&times;0.90 Attack / &times;1.12 Conceded</td><td>Accounts for division gap until sufficient top-flight games are played</td></tr>
+              <tr><td>Short Rest Penalty</td><td>-3.0% own xG</td><td>Applied on &le; 3 rest days when opponent is fully rested</td></tr>
+              <tr><td>Home Field Advantage</td><td>+46 Elo / ~+0.28 Goals</td><td>Quantifies travel, pitch familiarity, and referee bias</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 4. Tennis Methodology -->
+        <div class="docs-card doc-content-block" id="docTennis" style="display:none;">
+          <h3>🎾 ATP & WTA Tennis Quantitative Methodology</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+            Tennis is an individual, non-draw sport heavily dependent on court surface, ranking differentials, and physical fatigue.
+          </p>
+
+          <h4>1. Dual Surface Elo & Variable K-Factor (Weight: 26% Surface + 42% Global)</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Maintains distinct Elo ratings per surface (Hard, Clay, Grass, Carpet) blended 50/50 with global Elo. FiveThirtyEight variable K-factor adjusts for experience:
+          </p>
+          <div class="formula-box">
+K = 250.0 / (Matches_Played + 5.0)^0.40
+
+<span class="comment">// Debutants have high K (~130), allowing rapid discovery.</span>
+<span class="comment">// Seasoned veterans have low K (~25), preventing knee-jerk overreactions.</span>
+          </div>
+
+          <h4>2. Official Ranking Log-Ratio Model (Weight: 20%)</h4>
+          <div class="formula-box">
+P(Player A) = 1.0 / [ 1.0 + exp( -0.95 * ln( Rank_B / Rank_A ) ) ]
+<span class="comment">// A rank #5 player facing rank #50 produces an expected win rate of 88.9%</span>
+          </div>
+
+          <h4>3. Physical Fatigue & Cumulative Sets Penalty</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Deep runs in back-to-back tournaments drain endurance. Every extra set played in the last 7 days compared to the opponent penalizes win probability by <strong>-1.2 percentage points</strong> (capped at -6%).
+          </p>
+        </div>
+
+        <!-- 5. Injury & Absence Engine -->
+        <div class="docs-card doc-content-block" id="docInjuries" style="display:none;">
+          <h3>🩹 Automatic Star & Absence Engine</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+            BetPredict Pro automatically tracks injuries, suspensions, and benchings in real time directly from official ESPN injury APIs and game-day boxscores.
+          </p>
+
+          <h4>The 4 Player Impact Tiers</h4>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Tier</th><th>Category</th><th>Units</th><th>Margin Impact</th><th>Representative Players</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tier-badge tier-1">Tier 1</span></td>
+                <td><strong>Franchise Superstars & MVPs</strong></td>
+                <td>1.05 – 1.25</td>
+                <td><strong>-2.9 to -3.5 pts</strong></td>
+                <td>Nikola Jokić, Luka Dončić, Shai Gilgeous-Alexander, Giannis Antetokounmpo, Victor Wembanyama, Jayson Tatum, Stephen Curry, LeBron James</td>
+              </tr>
+              <tr>
+                <td><span class="tier-badge tier-2">Tier 2</span></td>
+                <td><strong>All-Stars & Primary Starters</strong></td>
+                <td>0.65 – 0.85</td>
+                <td><strong>-1.8 to -2.4 pts</strong></td>
+                <td>Ja Morant, Jaylen Brown, Paolo Banchero, Kawhi Leonard, Tyrese Haliburton, Cade Cunningham, Jalen Suggs, Myles Turner, Shaedon Sharpe</td>
+              </tr>
+              <tr>
+                <td><span class="tier-badge tier-3">Tier 3</span></td>
+                <td><strong>Key Starters, Defenders & 6th Men</strong></td>
+                <td>0.45 – 0.60</td>
+                <td><strong>-1.3 to -1.7 pts</strong></td>
+                <td>Alex Caruso, Dereck Lively II, Jonathan Isaac, Robert Williams III, Brook Lopez, Klay Thompson, Malik Monk, Russell Westbrook</td>
+              </tr>
+              <tr>
+                <td><span class="tier-badge tier-4">Tier 4</span></td>
+                <td><strong>Unranked Rotation Players</strong></td>
+                <td>0.20</td>
+                <td><strong>-0.6 pts</strong></td>
+                <td>Standard bench rotation contributors who log consistent rotational minutes</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Dynamic Stat Leader Detection & Deep-Bench Filtering</h4>
+          <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.84rem; color:var(--text-muted); margin-top:0.5rem;">
+            <p>
+              🌟 <strong>Dynamic Statistical Leaders:</strong> If an unheralded young player breaks out into a team leader (points, rebounds, assists) but isn't yet manually ranked, ESPN scoreboard feeds automatically elevate them to <strong>0.85 Star Units (-2.4 pts)</strong>.
+            </p>
+            <p>
+              ⏱️ <strong>Injury Status Multipliers:</strong> <code>Out</code> / <code>Suspension</code> = <strong>100%</strong> penalty, <code>Doubtful</code> = <strong>75%</strong>, <code>Day-To-Day</code> / <code>Questionable</code> = <strong>35%</strong>.
+            </p>
+            <p>
+              🚫 <strong>Deep Bench Filter:</strong> Players marked <code>didNotPlay: true</code> with reason <code>"COACH'S DECISION"</code> are completely ignored (<strong>0.0 pts penalty</strong>). Healthy 12th–15th benchwarmers never penalize a team's projected score.
+            </p>
+          </div>
+        </div>
+
+        <!-- 6. Value Bets & Staking -->
+        <div class="docs-card doc-content-block" id="docStaking" style="display:none;">
+          <h3>💰 Value Betting Intelligence & Staking Strategy</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.6;">
+            A high win probability does not constitute a profitable bet if the odds offered are worse than fair value. BetPredict Pro flags positive Expected Value (+EV) bets and suggests mathematically sound stake sizing.
+          </p>
+
+          <h4>1. Expected Value (Edge %)</h4>
+          <div class="formula-box">
+Expected_Value_Edge = (Model_Probability * Decimal_Odds) - 1.0
+
+<span class="comment">// Example:</span>
+<span class="comment">// Model Probability: 40% (0.40)</span>
+<span class="comment">// Bookmaker Odds: 2.80</span>
+<span class="comment">// Edge = (0.40 * 2.80) - 1.0 = +12.0% Value Edge</span>
+          </div>
+
+          <h4>2. Quarter-Kelly Criterion Bankroll Allocation</h4>
+          <p style="color:var(--text-muted); font-size:0.84rem; line-height:1.5;">
+            Full Kelly maximizes growth but suffers from extreme variance. The model implements <strong>Quarter-Kelly (0.25&times;)</strong>, capping maximum risk at 5.0% of total bankroll per position:
+          </p>
+          <div class="formula-box">
+b = Decimal_Odds - 1.0
+f_star = [ P * b - (1 - P) ] / b
+Stake_Pct = min( 5.0%, 0.25 * f_star * 100 )
+          </div>
+
+          <h4>3. Confidence Rating System</h4>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Sport</th><th>Low Confidence</th><th>Medium Confidence</th><th>High Confidence</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>⚽ Football (3-Way)</strong></td><td>&lt; 45%</td><td>45% – 59.9%</td><td>&ge; 60%</td></tr>
+              <tr><td><strong>🏀 NBA & 🎾 Tennis (2-Way)</strong></td><td>&lt; 56%</td><td>56% – 64.9%</td><td>&ge; 65%</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:0.78rem; color:var(--text-dim); margin-top:0.4rem;">
+            * If the pure statistical model and bookmakers disagree on the winner, confidence is automatically capped at Medium or downgraded to Low.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Daily Top 3 Safe Bets Calendar & 3-Month History View -->
+    <section id="viewCalendar" style="display:none;">
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem;">
+        <h2>🗓️ Daily Top 3 Safest Bets — Calendar & 3-Month Track Record</h2>
+        <div style="display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap;">
+          <div class="conf-filter-bar" id="calSportFilter">
+            <button class="conf-pill active" data-sport="ALL">🌐 All Sports (Best 3)</button>
+            <button class="conf-pill" data-sport="football">⚽ Football</button>
+            <button class="conf-pill" data-sport="nba">🏀 NBA</button>
+            <button class="conf-pill" data-sport="tennis">🎾 Tennis</button>
+          </div>
+          <button class="pill-btn" id="btnRefreshCalendar">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards (Past 3 Months) -->
+      <div class="weights-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top:0.5rem; margin-bottom:1.25rem;">
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.78rem;">TOP 3 SAFEST HIT RATE</h4>
+          <p id="calStatHitRate" style="font-size:1.75rem; font-weight:800; color:var(--primary);">-</p>
+          <p id="calStatHitSub" style="font-size:0.74rem; color:var(--text-dim);">Across past 3 months settled picks</p>
+        </div>
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.78rem;">🥇 #1 LOCK OF THE DAY</h4>
+          <p id="calStatLock1" style="font-size:1.75rem; font-weight:800; color:var(--accent-amber);">-</p>
+          <p id="calStatLock1Sub" style="font-size:0.74rem; color:var(--text-dim);">Win rate on daily #1 safest pick</p>
+        </div>
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.78rem;">🔥 &ge;2 OF 3 WINNING DAYS</h4>
+          <p id="calStatTwoPlus" style="font-size:1.75rem; font-weight:800; color:var(--accent-blue);">-</p>
+          <p id="calStatTwoPlusSub" style="font-size:0.74rem; color:var(--text-dim);">Days hitting at least 2 of 3 picks</p>
+        </div>
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.78rem;">💎 3/3 CLEAN SWEEP DAYS</h4>
+          <p id="calStatSweeps" style="font-size:1.75rem; font-weight:800; color:var(--accent-purple);">-</p>
+          <p id="calStatSweepsSub" style="font-size:0.74rem; color:var(--text-dim);">Perfect 3-for-3 daily sweeps</p>
+        </div>
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.78rem;">💰 FLAT 1U PROFIT & ROI</h4>
+          <p id="calStatProfit" style="font-size:1.75rem; font-weight:800; color:var(--primary);">-</p>
+          <p id="calStatRoiSub" style="font-size:0.74rem; color:var(--text-dim);">1 unit flat stake per Top 3 pick</p>
+        </div>
+      </div>
+
+      <!-- Selected Day Spotlight (Top 3 Safest Bets for Selected Date) -->
+      <div id="calendarSpotlight" class="cal-spotlight-box">
+        <div class="state-box">
+          <div class="spinner"></div>
+          <p>Loading Daily Top 3 Safest Bets Calendar...</p>
+        </div>
+      </div>
+
+      <!-- Month Navigation Bar -->
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem; margin-bottom:0.75rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;" id="calendarMonthsBar"></div>
+        <span style="font-size:0.78rem; color:var(--text-muted);">
+          💡 Click any day on the calendar to inspect its 3 safest picks above
+        </span>
+      </div>
+
+      <!-- Monthly Calendar Grid -->
+      <div class="cal-weekdays">
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      </div>
+      <div id="calendarGrid" class="cal-grid"></div>
+
+      <!-- Full Past 3 Months History Table -->
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem; margin-top:1.5rem;">
+        <h3 style="font-size:1.08rem;">📜 Complete 3-Month History — Daily Top 3 Picks & Outcomes</h3>
+        <div class="conf-filter-bar" id="calHistoryFilter">
+          <button class="conf-pill active" data-hfilter="ALL">All Days</button>
+          <button class="conf-pill" data-hfilter="SWEEP">💎 3/3 Sweeps</button>
+          <button class="conf-pill" data-hfilter="TWO_PLUS">🔥 &ge;2/3 Wins</button>
+          <button class="conf-pill" data-hfilter="UPCOMING">⏳ Today & Upcoming</button>
+        </div>
+      </div>
+
+      <div class="data-table-container">
+        <table class="data-table" id="tableCalendarHistory">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Day Result</th>
+              <th>Rank</th>
+              <th>Sport / League</th>
+              <th>Matchup</th>
+              <th>Safest Bet Pick</th>
+              <th>Model Prob</th>
+              <th>Odds</th>
+              <th>Score</th>
+              <th>Outcome</th>
+            </tr>
+          </thead>
+          <tbody id="calendarHistoryRows">
+            <tr><td colspan="10" style="text-align:center;">Loading 3-month Top 3 history...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Manual Absences / Injury Modal -->
+  <div id="absenceModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:100; align-items:center; justify-content:center;">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:14px; max-width:440px; width:90%; padding:1.25rem;">
+      <h3 style="margin-bottom:0.5rem; font-size:1.1rem;" id="modalMatchTitle">Adjust Player Absences</h3>
+      <p style="color:var(--text-muted); font-size:0.78rem; margin-bottom:1rem;">
+        Add missing key players (injuries, suspensions) to adjust Poisson expected goals dynamically.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:0.8rem; margin-bottom:1.25rem;">
+        <div>
+          <label id="lblModalHome" style="font-size:0.82rem; font-weight:600; display:block; margin-bottom:0.25rem;">Home Key Absences</label>
+          <input type="number" id="numModalHome" min="0" max="6" step="1" value="0" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid var(--border); border-radius:6px; color:#fff;">
+        </div>
+        <div>
+          <label id="lblModalAway" style="font-size:0.82rem; font-weight:600; display:block; margin-bottom:0.25rem;">Away Key Absences</label>
+          <input type="number" id="numModalAway" min="0" max="6" step="1" value="0" style="width:100%; padding:0.5rem; background:#0f172a; border:1px solid var(--border); border-radius:6px; color:#fff;">
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+        <button class="pill-btn" id="btnCancelModal">Cancel</button>
+        <button class="pill-btn active" id="btnSaveModal">Save Adjustment</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=24"></script>
+</body>
+</html>

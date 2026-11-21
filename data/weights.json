@@ -1,0 +1,21 @@
+{
+ "football": {
+  "stats": {
+   "xg_poisson": 0.4008,
+   "goals_poisson": 0.1881,
+   "elo": 0.4094,
+   "form": 0.0016,
+   "table": 0.0,
+   "h2h": 0.0001
+  }
+ },
+ "tennis": {
+  "stats": {
+   "surface_elo": 0.4161,
+   "elo": 0.061,
+   "ranking": 0.3281,
+   "form": 0.0941,
+   "h2h": 0.1007
+  }
+ }
+}

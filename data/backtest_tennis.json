@@ -1,0 +1,2009 @@
+{
+ "sport": "tennis",
+ "years": [
+  2021,
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "train_years": [
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "test_year": 2026,
+ "tuned_stats_weights": {
+  "surface_elo": 0.4161,
+  "elo": 0.061,
+  "ranking": 0.3281,
+  "form": 0.0941,
+  "h2h": 0.1007
+ },
+ "market_share": 0.65,
+ "default_stats_weights": {
+  "surface_elo": 0.45,
+  "elo": 0.2,
+  "ranking": 0.15,
+  "form": 0.12,
+  "h2h": 0.08
+ },
+ "train": {
+  "label": "train",
+  "matches": 19715,
+  "components": {
+   "base_rates": {
+    "log_loss": 0.6931,
+    "brier": 0.5,
+    "accuracy": 0.5
+   },
+   "market": {
+    "log_loss": 0.5863,
+    "brier": 0.403,
+    "accuracy": 0.681
+   },
+   "surface_elo": {
+    "log_loss": 0.6322,
+    "brier": 0.4412,
+    "accuracy": 0.6387
+   },
+   "elo": {
+    "log_loss": 0.6377,
+    "brier": 0.4442,
+    "accuracy": 0.6407
+   },
+   "ranking": {
+    "log_loss": 0.6621,
+    "brier": 0.458,
+    "accuracy": 0.6378
+   },
+   "form": {
+    "log_loss": 0.6657,
+    "brier": 0.4734,
+    "accuracy": 0.5912
+   },
+   "h2h": {
+    "log_loss": 0.6884,
+    "brier": 0.4952,
+    "accuracy": 0.5283
+   }
+  },
+  "blends": {
+   "final": {
+    "weights": {
+     "surface_elo": 0.1456,
+     "elo": 0.0213,
+     "ranking": 0.1148,
+     "form": 0.0329,
+     "h2h": 0.0352,
+     "market": 0.65
+    },
+    "log_loss": 0.5931,
+    "brier": 0.4083,
+    "accuracy": 0.6779,
+    "calibration": [
+     {
+      "bin": "50%-60%",
+      "n": 6768,
+      "predicted": 0.551,
+      "actual": 0.553
+     },
+     {
+      "bin": "60%-70%",
+      "n": 6143,
+      "predicted": 0.647,
+      "actual": 0.658
+     },
+     {
+      "bin": "70%-80%",
+      "n": 4286,
+      "predicted": 0.747,
+      "actual": 0.776
+     },
+     {
+      "bin": "80%-90%",
+      "n": 2127,
+      "predicted": 0.841,
+      "actual": 0.882
+     },
+     {
+      "bin": "90%-100%",
+      "n": 391,
+      "predicted": 0.92,
+      "actual": 0.972
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 19715,
+      "hit_rate": 0.678,
+      "profit_units": -908.0,
+      "roi": -0.046,
+      "avg_odds": 1.45
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 12947,
+      "hit_rate": 0.743,
+      "profit_units": -501.1,
+      "roi": -0.039,
+      "avg_odds": 1.32
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 6804,
+      "hit_rate": 0.82,
+      "profit_units": -186.3,
+      "roi": -0.027,
+      "avg_odds": 1.2
+     },
+     "value_edge>=2%@avg": {
+      "bets": 5246,
+      "hit_rate": 0.334,
+      "profit_units": -704.5,
+      "roi": -0.134,
+      "avg_odds": 2.84
+     },
+     "value_edge>=4%@avg": {
+      "bets": 3940,
+      "hit_rate": 0.304,
+      "profit_units": -619.9,
+      "roi": -0.157,
+      "avg_odds": 3.0
+     },
+     "value_edge>=8%@avg": {
+      "bets": 2283,
+      "hit_rate": 0.283,
+      "profit_units": -315.5,
+      "roi": -0.138,
+      "avg_odds": 3.28
+     },
+     "value_edge>=2%@max": {
+      "bets": 11680,
+      "hit_rate": 0.392,
+      "profit_units": -428.8,
+      "roi": -0.037,
+      "avg_odds": 2.74
+     },
+     "value_edge>=4%@max": {
+      "bets": 9297,
+      "hit_rate": 0.368,
+      "profit_units": -391.4,
+      "roi": -0.042,
+      "avg_odds": 2.88
+     },
+     "value_edge>=8%@max": {
+      "bets": 5917,
+      "hit_rate": 0.325,
+      "profit_units": -300.7,
+      "roi": -0.051,
+      "avg_odds": 3.17
+     }
+    }
+   },
+   "stats_model": {
+    "weights": {
+     "surface_elo": 0.4161,
+     "elo": 0.061,
+     "ranking": 0.3281,
+     "form": 0.0941,
+     "h2h": 0.1007,
+     "market": 0.0
+    },
+    "log_loss": 0.6198,
+    "brier": 0.4316,
+    "accuracy": 0.6504,
+    "calibration": [
+     {
+      "bin": "50%-60%",
+      "n": 7104,
+      "predicted": 0.549,
+      "actual": 0.543
+     },
+     {
+      "bin": "60%-70%",
+      "n": 6130,
+      "predicted": 0.648,
+      "actual": 0.634
+     },
+     {
+      "bin": "70%-80%",
+      "n": 4194,
+      "predicted": 0.745,
+      "actual": 0.746
+     },
+     {
+      "bin": "80%-90%",
+      "n": 2046,
+      "predicted": 0.84,
+      "actual": 0.841
+     },
+     {
+      "bin": "90%-100%",
+      "n": 241,
+      "predicted": 0.915,
+      "actual": 0.946
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 19715,
+      "hit_rate": 0.65,
+      "profit_units": -939.8,
+      "roi": -0.048,
+      "avg_odds": 1.56
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 12611,
+      "hit_rate": 0.711,
+      "profit_units": -624.2,
+      "roi": -0.049,
+      "avg_odds": 1.39
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 6481,
+      "hit_rate": 0.784,
+      "profit_units": -254.6,
+      "roi": -0.039,
+      "avg_odds": 1.25
+     },
+     "value_edge>=2%@avg": {
+      "bets": 12188,
+      "hit_rate": 0.385,
+      "profit_units": -1386.8,
+      "roi": -0.114,
+      "avg_odds": 2.79
+     },
+     "value_edge>=4%@avg": {
+      "bets": 11016,
+      "hit_rate": 0.369,
+      "profit_units": -1327.7,
+      "roi": -0.121,
+      "avg_odds": 2.88
+     },
+     "value_edge>=8%@avg": {
+      "bets": 9000,
+      "hit_rate": 0.342,
+      "profit_units": -1173.4,
+      "roi": -0.13,
+      "avg_odds": 3.07
+     },
+     "value_edge>=2%@max": {
+      "bets": 15415,
+      "hit_rate": 0.409,
+      "profit_units": -833.2,
+      "roi": -0.054,
+      "avg_odds": 2.89
+     },
+     "value_edge>=4%@max": {
+      "bets": 14159,
+      "hit_rate": 0.396,
+      "profit_units": -800.8,
+      "roi": -0.057,
+      "avg_odds": 2.98
+     },
+     "value_edge>=8%@max": {
+      "bets": 11873,
+      "hit_rate": 0.369,
+      "profit_units": -752.5,
+      "roi": -0.063,
+      "avg_odds": 3.16
+     }
+    }
+   },
+   "market_only": {
+    "weights": {
+     "market": 1.0
+    },
+    "log_loss": 0.5863,
+    "brier": 0.403,
+    "accuracy": 0.681,
+    "calibration": [
+     {
+      "bin": "50%-60%",
+      "n": 6213,
+      "predicted": 0.553,
+      "actual": 0.544
+     },
+     {
+      "bin": "60%-70%",
+      "n": 6061,
+      "predicted": 0.647,
+      "actual": 0.655
+     },
+     {
+      "bin": "70%-80%",
+      "n": 4330,
+      "predicted": 0.747,
+      "actual": 0.761
+     },
+     {
+      "bin": "80%-90%",
+      "n": 2424,
+      "predicted": 0.844,
+      "actual": 0.875
+     },
+     {
+      "bin": "90%-100%",
+      "n": 687,
+      "predicted": 0.926,
+      "actual": 0.967
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 19715,
+      "hit_rate": 0.681,
+      "profit_units": -875.7,
+      "roi": -0.044,
+      "avg_odds": 1.45
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 13502,
+      "hit_rate": 0.744,
+      "profit_units": -453.5,
+      "roi": -0.034,
+      "avg_odds": 1.32
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 7441,
+      "hit_rate": 0.817,
+      "profit_units": -195.2,
+      "roi": -0.026,
+      "avg_odds": 1.2
+     },
+     "value_edge>=2%@avg": {
+      "bets": 4,
+      "hit_rate": 0.25,
+      "profit_units": -1.8,
+      "roi": -0.44,
+      "avg_odds": 2.13
+     },
+     "value_edge>=4%@avg": {
+      "bets": 4,
+      "hit_rate": 0.25,
+      "profit_units": -1.8,
+      "roi": -0.44,
+      "avg_odds": 2.13
+     },
+     "value_edge>=8%@avg": {
+      "bets": 3,
+      "hit_rate": 0.333,
+      "profit_units": -0.8,
+      "roi": -0.253,
+      "avg_odds": 1.98
+     },
+     "value_edge>=2%@max": {
+      "bets": 5631,
+      "hit_rate": 0.356,
+      "profit_units": -7.3,
+      "roi": -0.001,
+      "avg_odds": 3.0
+     },
+     "value_edge>=4%@max": {
+      "bets": 2718,
+      "hit_rate": 0.343,
+      "profit_units": 76.4,
+      "roi": 0.028,
+      "avg_odds": 3.18
+     },
+     "value_edge>=8%@max": {
+      "bets": 719,
+      "hit_rate": 0.328,
+      "profit_units": 41.9,
+      "roi": 0.058,
+      "avg_odds": 3.41
+     }
+    }
+   }
+  },
+  "market_share_curve": [
+   {
+    "market_share": 0.0,
+    "log_loss": 0.6198,
+    "brier": 0.4316,
+    "accuracy": 0.6504
+   },
+   {
+    "market_share": 0.2,
+    "log_loss": 0.6096,
+    "brier": 0.4226,
+    "accuracy": 0.6602
+   },
+   {
+    "market_share": 0.4,
+    "log_loss": 0.6012,
+    "brier": 0.4152,
+    "accuracy": 0.6706
+   },
+   {
+    "market_share": 0.5,
+    "log_loss": 0.5977,
+    "brier": 0.4122,
+    "accuracy": 0.6736
+   },
+   {
+    "market_share": 0.6,
+    "log_loss": 0.5945,
+    "brier": 0.4095,
+    "accuracy": 0.676
+   },
+   {
+    "market_share": 0.65,
+    "log_loss": 0.5931,
+    "brier": 0.4083,
+    "accuracy": 0.6779
+   },
+   {
+    "market_share": 0.7,
+    "log_loss": 0.5918,
+    "brier": 0.4073,
+    "accuracy": 0.6782
+   },
+   {
+    "market_share": 0.8,
+    "log_loss": 0.5895,
+    "brier": 0.4054,
+    "accuracy": 0.6783
+   },
+   {
+    "market_share": 0.9,
+    "log_loss": 0.5877,
+    "brier": 0.404,
+    "accuracy": 0.6803
+   },
+   {
+    "market_share": 1.0,
+    "log_loss": 0.5863,
+    "brier": 0.403,
+    "accuracy": 0.681
+   }
+  ]
+ },
+ "test": {
+  "label": "test 2026 (out-of-sample)",
+  "matches": 4396,
+  "components": {
+   "base_rates": {
+    "log_loss": 0.6927,
+    "brier": 0.4995,
+    "accuracy": 0.515
+   },
+   "market": {
+    "log_loss": 0.5795,
+    "brier": 0.3967,
+    "accuracy": 0.6918
+   },
+   "surface_elo": {
+    "log_loss": 0.6183,
+    "brier": 0.4295,
+    "accuracy": 0.6565
+   },
+   "elo": {
+    "log_loss": 0.627,
+    "brier": 0.4367,
+    "accuracy": 0.6481
+   },
+   "ranking": {
+    "log_loss": 0.6388,
+    "brier": 0.4417,
+    "accuracy": 0.6467
+   },
+   "form": {
+    "log_loss": 0.6641,
+    "brier": 0.472,
+    "accuracy": 0.5976
+   },
+   "h2h": {
+    "log_loss": 0.6849,
+    "brier": 0.4916,
+    "accuracy": 0.5453
+   }
+  },
+  "blends": {
+   "final": {
+    "weights": {
+     "surface_elo": 0.1456,
+     "elo": 0.0213,
+     "ranking": 0.1148,
+     "form": 0.0329,
+     "h2h": 0.0352,
+     "market": 0.65
+    },
+    "log_loss": 0.5849,
+    "brier": 0.4011,
+    "accuracy": 0.6856,
+    "calibration": [
+     {
+      "bin": "50%-60%",
+      "n": 1489,
+      "predicted": 0.552,
+      "actual": 0.553
+     },
+     {
+      "bin": "60%-70%",
+      "n": 1359,
+      "predicted": 0.647,
+      "actual": 0.667
+     },
+     {
+      "bin": "70%-80%",
+      "n": 993,
+      "predicted": 0.746,
+      "actual": 0.778
+     },
+     {
+      "bin": "80%-90%",
+      "n": 456,
+      "predicted": 0.844,
+      "actual": 0.914
+     },
+     {
+      "bin": "90%-100%",
+      "n": 99,
+      "predicted": 0.921,
+      "actual": 0.96
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 4396,
+      "hit_rate": 0.686,
+      "profit_units": -188.8,
+      "roi": -0.043,
+      "avg_odds": 1.44
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 2907,
+      "hit_rate": 0.754,
+      "profit_units": -81.6,
+      "roi": -0.028,
+      "avg_odds": 1.31
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 1548,
+      "hit_rate": 0.83,
+      "profit_units": -27.1,
+      "roi": -0.017,
+      "avg_odds": 1.19
+     },
+     "value_edge>=2%@avg": {
+      "bets": 1003,
+      "hit_rate": 0.327,
+      "profit_units": -141.8,
+      "roi": -0.141,
+      "avg_odds": 2.84
+     },
+     "value_edge>=4%@avg": {
+      "bets": 740,
+      "hit_rate": 0.295,
+      "profit_units": -122.4,
+      "roi": -0.165,
+      "avg_odds": 3.0
+     },
+     "value_edge>=8%@avg": {
+      "bets": 415,
+      "hit_rate": 0.263,
+      "profit_units": -75.4,
+      "roi": -0.182,
+      "avg_odds": 3.26
+     },
+     "value_edge>=2%@max": {
+      "bets": 1969,
+      "hit_rate": 0.367,
+      "profit_units": -118.2,
+      "roi": -0.06,
+      "avg_odds": 2.8
+     },
+     "value_edge>=4%@max": {
+      "bets": 1536,
+      "hit_rate": 0.353,
+      "profit_units": -62.3,
+      "roi": -0.041,
+      "avg_odds": 2.95
+     },
+     "value_edge>=8%@max": {
+      "bets": 927,
+      "hit_rate": 0.292,
+      "profit_units": -101.6,
+      "roi": -0.11,
+      "avg_odds": 3.23
+     }
+    }
+   },
+   "stats_model": {
+    "weights": {
+     "surface_elo": 0.4161,
+     "elo": 0.061,
+     "ranking": 0.3281,
+     "form": 0.0941,
+     "h2h": 0.1007,
+     "market": 0.0
+    },
+    "log_loss": 0.608,
+    "brier": 0.4215,
+    "accuracy": 0.6601,
+    "calibration": [
+     {
+      "bin": "50%-60%",
+      "n": 1532,
+      "predicted": 0.549,
+      "actual": 0.545
+     },
+     {
+      "bin": "60%-70%",
+      "n": 1381,
+      "predicted": 0.649,
+      "actual": 0.631
+     },
+     {
+      "bin": "70%-80%",
+      "n": 942,
+      "predicted": 0.745,
+      "actual": 0.759
+     },
+     {
+      "bin": "80%-90%",
+      "n": 473,
+      "predicted": 0.842,
+      "actual": 0.875
+     },
+     {
+      "bin": "90%-100%",
+      "n": 68,
+      "predicted": 0.916,
+      "actual": 0.971
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 4396,
+      "hit_rate": 0.66,
+      "profit_units": -225.0,
+      "roi": -0.051,
+      "avg_odds": 1.53
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 2864,
+      "hit_rate": 0.722,
+      "profit_units": -118.9,
+      "roi": -0.042,
+      "avg_odds": 1.38
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 1483,
+      "hit_rate": 0.806,
+      "profit_units": -21.6,
+      "roi": -0.015,
+      "avg_odds": 1.25
+     },
+     "value_edge>=2%@avg": {
+      "bets": 2577,
+      "hit_rate": 0.388,
+      "profit_units": -284.2,
+      "roi": -0.11,
+      "avg_odds": 2.76
+     },
+     "value_edge>=4%@avg": {
+      "bets": 2323,
+      "hit_rate": 0.374,
+      "profit_units": -265.5,
+      "roi": -0.114,
+      "avg_odds": 2.85
+     },
+     "value_edge>=8%@avg": {
+      "bets": 1886,
+      "hit_rate": 0.35,
+      "profit_units": -219.2,
+      "roi": -0.116,
+      "avg_odds": 3.03
+     },
+     "value_edge>=2%@max": {
+      "bets": 3093,
+      "hit_rate": 0.406,
+      "profit_units": -164.7,
+      "roi": -0.053,
+      "avg_odds": 2.86
+     },
+     "value_edge>=4%@max": {
+      "bets": 2816,
+      "hit_rate": 0.391,
+      "profit_units": -162.1,
+      "roi": -0.058,
+      "avg_odds": 2.95
+     },
+     "value_edge>=8%@max": {
+      "bets": 2342,
+      "hit_rate": 0.366,
+      "profit_units": -149.0,
+      "roi": -0.064,
+      "avg_odds": 3.12
+     }
+    }
+   },
+   "market_only": {
+    "weights": {
+     "market": 1.0
+    },
+    "log_loss": 0.5795,
+    "brier": 0.3967,
+    "accuracy": 0.6918,
+    "calibration": [
+     {
+      "bin": "50%-60%",
+      "n": 1395,
+      "predicted": 0.555,
+      "actual": 0.55
+     },
+     {
+      "bin": "60%-70%",
+      "n": 1350,
+      "predicted": 0.648,
+      "actual": 0.668
+     },
+     {
+      "bin": "70%-80%",
+      "n": 980,
+      "predicted": 0.747,
+      "actual": 0.781
+     },
+     {
+      "bin": "80%-90%",
+      "n": 507,
+      "predicted": 0.844,
+      "actual": 0.888
+     },
+     {
+      "bin": "90%-100%",
+      "n": 164,
+      "predicted": 0.925,
+      "actual": 0.957
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 4396,
+      "hit_rate": 0.692,
+      "profit_units": -153.2,
+      "roi": -0.035,
+      "avg_odds": 1.43
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 3001,
+      "hit_rate": 0.758,
+      "profit_units": -59.0,
+      "roi": -0.02,
+      "avg_odds": 1.31
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 1651,
+      "hit_rate": 0.831,
+      "profit_units": -21.7,
+      "roi": -0.013,
+      "avg_odds": 1.2
+     },
+     "value_edge>=2%@avg": {
+      "bets": 1,
+      "hit_rate": 1.0,
+      "profit_units": 0.8,
+      "roi": 0.81,
+      "avg_odds": 1.81
+     },
+     "value_edge>=4%@avg": {
+      "bets": 1,
+      "hit_rate": 1.0,
+      "profit_units": 0.8,
+      "roi": 0.81,
+      "avg_odds": 1.81
+     },
+     "value_edge>=8%@avg": {
+      "bets": 1,
+      "hit_rate": 1.0,
+      "profit_units": 0.8,
+      "roi": 0.81,
+      "avg_odds": 1.81
+     },
+     "value_edge>=2%@max": {
+      "bets": 459,
+      "hit_rate": 0.375,
+      "profit_units": 40.4,
+      "roi": 0.088,
+      "avg_odds": 3.12
+     },
+     "value_edge>=4%@max": {
+      "bets": 238,
+      "hit_rate": 0.349,
+      "profit_units": 8.5,
+      "roi": 0.036,
+      "avg_odds": 3.17
+     },
+     "value_edge>=8%@max": {
+      "bets": 100,
+      "hit_rate": 0.27,
+      "profit_units": -17.9,
+      "roi": -0.179,
+      "avg_odds": 3.24
+     }
+    }
+   }
+  },
+  "market_share_curve": [
+   {
+    "market_share": 0.0,
+    "log_loss": 0.608,
+    "brier": 0.4215,
+    "accuracy": 0.6601
+   },
+   {
+    "market_share": 0.2,
+    "log_loss": 0.5991,
+    "brier": 0.4136,
+    "accuracy": 0.6679
+   },
+   {
+    "market_share": 0.4,
+    "log_loss": 0.5918,
+    "brier": 0.4071,
+    "accuracy": 0.6758
+   },
+   {
+    "market_share": 0.5,
+    "log_loss": 0.5887,
+    "brier": 0.4044,
+    "accuracy": 0.6799
+   },
+   {
+    "market_share": 0.6,
+    "log_loss": 0.5861,
+    "brier": 0.4021,
+    "accuracy": 0.6824
+   },
+   {
+    "market_share": 0.65,
+    "log_loss": 0.5849,
+    "brier": 0.4011,
+    "accuracy": 0.6856
+   },
+   {
+    "market_share": 0.7,
+    "log_loss": 0.5838,
+    "brier": 0.4002,
+    "accuracy": 0.6895
+   },
+   {
+    "market_share": 0.8,
+    "log_loss": 0.5819,
+    "brier": 0.3987,
+    "accuracy": 0.6893
+   },
+   {
+    "market_share": 0.9,
+    "log_loss": 0.5805,
+    "brier": 0.3975,
+    "accuracy": 0.6899
+   },
+   {
+    "market_share": 1.0,
+    "log_loss": 0.5795,
+    "brier": 0.3967,
+    "accuracy": 0.6918
+   }
+  ],
+  "per_surface": {
+   "Clay": {
+    "n": 1344,
+    "log_loss": 0.5895,
+    "brier": 0.404,
+    "accuracy": 0.6823
+   },
+   "Grass": {
+    "n": 580,
+    "log_loss": 0.5915,
+    "brier": 0.4093,
+    "accuracy": 0.6603
+   },
+   "Hard": {
+    "n": 2472,
+    "log_loss": 0.5808,
+    "brier": 0.3977,
+    "accuracy": 0.6934
+   }
+  },
+  "per_tour": {
+   "ATP": {
+    "n": 2195,
+    "log_loss": 0.596,
+    "brier": 0.4107,
+    "accuracy": 0.6811
+   },
+   "WTA": {
+    "n": 2201,
+    "log_loss": 0.5738,
+    "brier": 0.3916,
+    "accuracy": 0.6901
+   }
+  }
+ },
+ "recent_predictions": [
+  {
+   "date": "2026-10-11",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Zheng Q. vs Andreeva M.",
+   "score": "2-0",
+   "probs": [
+    0.381,
+    0.619
+   ],
+   "pick": "Andreeva M.",
+   "result": "Zheng Q.",
+   "hit": false,
+   "odds_avg": [
+    2.38,
+    1.56
+   ]
+  },
+  {
+   "date": "2026-10-10",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Zheng Q. vs Mertens E.",
+   "score": "2-0",
+   "probs": [
+    0.552,
+    0.448
+   ],
+   "pick": "Zheng Q.",
+   "result": "Zheng Q.",
+   "hit": true,
+   "odds_avg": [
+    1.63,
+    2.22
+   ]
+  },
+  {
+   "date": "2026-10-10",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Bartunkova N. vs Andreeva M.",
+   "score": "0-2",
+   "probs": [
+    0.322,
+    0.678
+   ],
+   "pick": "Andreeva M.",
+   "result": "Andreeva M.",
+   "hit": true,
+   "odds_avg": [
+    2.88,
+    1.4
+   ]
+  },
+  {
+   "date": "2026-10-09",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Swiatek I. vs Mertens E.",
+   "score": "0-2",
+   "probs": [
+    0.766,
+    0.234
+   ],
+   "pick": "Swiatek I.",
+   "result": "Mertens E.",
+   "hit": false,
+   "odds_avg": [
+    1.2,
+    4.3
+   ]
+  },
+  {
+   "date": "2026-10-09",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Svitolina E. vs Zheng Q.",
+   "score": "0-2",
+   "probs": [
+    0.599,
+    0.401
+   ],
+   "pick": "Svitolina E.",
+   "result": "Zheng Q.",
+   "hit": false,
+   "odds_avg": [
+    1.7,
+    2.1
+   ]
+  },
+  {
+   "date": "2026-10-08",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Andreeva M. vs Alexandrova E.",
+   "score": "2-0",
+   "probs": [
+    0.706,
+    0.294
+   ],
+   "pick": "Andreeva M.",
+   "result": "Andreeva M.",
+   "hit": true,
+   "odds_avg": [
+    1.31,
+    3.33
+   ]
+  },
+  {
+   "date": "2026-10-08",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Bartunkova N. vs Muchova K.",
+   "score": "2-0",
+   "probs": [
+    0.304,
+    0.696
+   ],
+   "pick": "Muchova K.",
+   "result": "Bartunkova N.",
+   "hit": false,
+   "odds_avg": [
+    2.99,
+    1.37
+   ]
+  },
+  {
+   "date": "2026-10-07",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Svitolina E. vs Li A.",
+   "score": "2-0",
+   "probs": [
+    0.741,
+    0.259
+   ],
+   "pick": "Svitolina E.",
+   "result": "Svitolina E.",
+   "hit": true,
+   "odds_avg": [
+    1.28,
+    3.48
+   ]
+  },
+  {
+   "date": "2026-10-07",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Charaeva A. vs Zheng Q.",
+   "score": "1-2",
+   "probs": [
+    0.284,
+    0.716
+   ],
+   "pick": "Zheng Q.",
+   "result": "Zheng Q.",
+   "hit": true,
+   "odds_avg": [
+    3.54,
+    1.28
+   ]
+  },
+  {
+   "date": "2026-10-07",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Gauff C. vs Mertens E.",
+   "score": "0-2",
+   "probs": [
+    0.784,
+    0.216
+   ],
+   "pick": "Gauff C.",
+   "result": "Mertens E.",
+   "hit": false,
+   "odds_avg": [
+    1.22,
+    4.05
+   ]
+  },
+  {
+   "date": "2026-10-07",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Jovic I. vs Swiatek I.",
+   "score": "0-2",
+   "probs": [
+    0.363,
+    0.637
+   ],
+   "pick": "Swiatek I.",
+   "result": "Swiatek I.",
+   "hit": true,
+   "odds_avg": [
+    2.67,
+    1.45
+   ]
+  },
+  {
+   "date": "2026-10-06",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Kraus S. vs Bartunkova N.",
+   "score": "1-2",
+   "probs": [
+    0.219,
+    0.781
+   ],
+   "pick": "Bartunkova N.",
+   "result": "Bartunkova N.",
+   "hit": true,
+   "odds_avg": [
+    4.47,
+    1.19
+   ]
+  },
+  {
+   "date": "2026-10-06",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Muchova K. vs Osaka N.",
+   "score": "2-1",
+   "probs": [
+    0.571,
+    0.429
+   ],
+   "pick": "Muchova K.",
+   "result": "Muchova K.",
+   "hit": true,
+   "odds_avg": [
+    1.65,
+    2.2
+   ]
+  },
+  {
+   "date": "2026-10-06",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Noskova L. vs Alexandrova E.",
+   "score": "0-2",
+   "probs": [
+    0.732,
+    0.268
+   ],
+   "pick": "Noskova L.",
+   "result": "Alexandrova E.",
+   "hit": false,
+   "odds_avg": [
+    1.28,
+    3.59
+   ]
+  },
+  {
+   "date": "2026-10-06",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Snigur D. vs Andreeva M.",
+   "score": "0-2",
+   "probs": [
+    0.211,
+    0.789
+   ],
+   "pick": "Andreeva M.",
+   "result": "Andreeva M.",
+   "hit": true,
+   "odds_avg": [
+    5.1,
+    1.15
+   ]
+  },
+  {
+   "date": "2026-10-06",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Lehecka J. vs Alcaraz C.",
+   "score": "0-2",
+   "probs": [
+    0.221,
+    0.779
+   ],
+   "pick": "Alcaraz C.",
+   "result": "Alcaraz C.",
+   "hit": true,
+   "odds_avg": [
+    3.84,
+    1.24
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Sun X. vs Gauff C.",
+   "score": "0-2",
+   "probs": [
+    0.115,
+    0.885
+   ],
+   "pick": "Gauff C.",
+   "result": "Gauff C.",
+   "hit": true,
+   "odds_avg": [
+    9.34,
+    1.05
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Sakkari M. vs Svitolina E.",
+   "score": "0-2",
+   "probs": [
+    0.261,
+    0.739
+   ],
+   "pick": "Svitolina E.",
+   "result": "Svitolina E.",
+   "hit": true,
+   "odds_avg": [
+    3.43,
+    1.29
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Mertens E. vs Ostapenko J.",
+   "score": "2-1",
+   "probs": [
+    0.618,
+    0.382
+   ],
+   "pick": "Mertens E.",
+   "result": "Mertens E.",
+   "hit": true,
+   "odds_avg": [
+    1.49,
+    2.56
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Li A. vs Bencic B.",
+   "score": "2-0",
+   "probs": [
+    0.319,
+    0.681
+   ],
+   "pick": "Bencic B.",
+   "result": "Li A.",
+   "hit": false,
+   "odds_avg": [
+    2.96,
+    1.37
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Kartal S. vs Charaeva A.",
+   "score": "0-2",
+   "probs": [
+    0.623,
+    0.377
+   ],
+   "pick": "Kartal S.",
+   "result": "Charaeva A.",
+   "hit": false,
+   "odds_avg": [
+    1.49,
+    2.53
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Bouzkova M. vs Zheng Q.",
+   "score": "1-2",
+   "probs": [
+    0.419,
+    0.581
+   ],
+   "pick": "Zheng Q.",
+   "result": "Zheng Q.",
+   "hit": true,
+   "odds_avg": [
+    2.52,
+    1.5
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Rakhimova K. vs Jovic I.",
+   "score": "0-2",
+   "probs": [
+    0.22,
+    0.78
+   ],
+   "pick": "Jovic I.",
+   "result": "Jovic I.",
+   "hit": true,
+   "odds_avg": [
+    4.2,
+    1.21
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Swiatek I. vs Vekic D.",
+   "score": "2-1",
+   "probs": [
+    0.859,
+    0.141
+   ],
+   "pick": "Swiatek I.",
+   "result": "Swiatek I.",
+   "hit": true,
+   "odds_avg": [
+    1.08,
+    7.25
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Lehecka J. vs Vacherot V.",
+   "score": "2-0",
+   "probs": [
+    0.593,
+    0.407
+   ],
+   "pick": "Lehecka J.",
+   "result": "Lehecka J.",
+   "hit": true,
+   "odds_avg": [
+    1.48,
+    2.56
+   ]
+  },
+  {
+   "date": "2026-10-05",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Munar J. vs Alcaraz C.",
+   "score": "1-2",
+   "probs": [
+    0.139,
+    0.861
+   ],
+   "pick": "Alcaraz C.",
+   "result": "Alcaraz C.",
+   "hit": true,
+   "odds_avg": [
+    6.42,
+    1.1
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Muchova K. vs Samsonova L.",
+   "score": "2-1",
+   "probs": [
+    0.758,
+    0.242
+   ],
+   "pick": "Muchova K.",
+   "result": "Muchova K.",
+   "hit": true,
+   "odds_avg": [
+    1.25,
+    3.78
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Osaka N. vs Bejlek S.",
+   "score": "2-0",
+   "probs": [
+    0.694,
+    0.306
+   ],
+   "pick": "Osaka N.",
+   "result": "Osaka N.",
+   "hit": true,
+   "odds_avg": [
+    1.31,
+    3.31
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Snigur D. vs Preston T.",
+   "score": "2-0",
+   "probs": [
+    0.593,
+    0.407
+   ],
+   "pick": "Snigur D.",
+   "result": "Snigur D.",
+   "hit": true,
+   "odds_avg": [
+    1.52,
+    2.46
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Noskova L. vs Golubic V.",
+   "score": "2-0",
+   "probs": [
+    0.834,
+    0.166
+   ],
+   "pick": "Noskova L.",
+   "result": "Noskova L.",
+   "hit": true,
+   "odds_avg": [
+    1.12,
+    5.93
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Kudermetova P. vs Andreeva M.",
+   "score": "0-2",
+   "probs": [
+    0.121,
+    0.879
+   ],
+   "pick": "Andreeva M.",
+   "result": "Andreeva M.",
+   "hit": true,
+   "odds_avg": [
+    8.23,
+    1.07
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Alexandrova E. vs Shnaider D.",
+   "score": "2-1",
+   "probs": [
+    0.359,
+    0.641
+   ],
+   "pick": "Shnaider D.",
+   "result": "Alexandrova E.",
+   "hit": false,
+   "odds_avg": [
+    2.74,
+    1.43
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Kraus S. vs Yastremska D.",
+   "score": "2-0",
+   "probs": [
+    0.345,
+    0.655
+   ],
+   "pick": "Yastremska D.",
+   "result": "Kraus S.",
+   "hit": false,
+   "odds_avg": [
+    3.03,
+    1.36
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Bartunkova N. vs Sabalenka A.",
+   "score": "2-0",
+   "probs": [
+    0.163,
+    0.837
+   ],
+   "pick": "Sabalenka A.",
+   "result": "Bartunkova N.",
+   "hit": false,
+   "odds_avg": [
+    5.5,
+    1.13
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Vallejo D. vs Lehecka J.",
+   "score": "0-2",
+   "probs": [
+    0.306,
+    0.694
+   ],
+   "pick": "Lehecka J.",
+   "result": "Lehecka J.",
+   "hit": true,
+   "odds_avg": [
+    3.23,
+    1.32
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Fils A. vs Vacherot V.",
+   "score": "1-2",
+   "probs": [
+    0.748,
+    0.252
+   ],
+   "pick": "Fils A.",
+   "result": "Vacherot V.",
+   "hit": false,
+   "odds_avg": [
+    1.23,
+    3.93
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Munar J. vs Jacquet K.",
+   "score": "2-0",
+   "probs": [
+    0.58,
+    0.42
+   ],
+   "pick": "Munar J.",
+   "result": "Munar J.",
+   "hit": true,
+   "odds_avg": [
+    1.62,
+    2.21
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Djokovic N. vs Zverev A.",
+   "score": "2-1",
+   "probs": [
+    0.326,
+    0.674
+   ],
+   "pick": "Zverev A.",
+   "result": "Djokovic N.",
+   "hit": false,
+   "odds_avg": [
+    3.1,
+    1.34
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Cerundolo F. vs Medvedev D.",
+   "score": "0-2",
+   "probs": [
+    0.341,
+    0.659
+   ],
+   "pick": "Medvedev D.",
+   "result": "Medvedev D.",
+   "hit": true,
+   "odds_avg": [
+    3.0,
+    1.36
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "De Minaur A. vs Rublev A.",
+   "score": "2-1",
+   "probs": [
+    0.569,
+    0.431
+   ],
+   "pick": "De Minaur A.",
+   "result": "De Minaur A.",
+   "hit": true,
+   "odds_avg": [
+    1.75,
+    2.0
+   ]
+  },
+  {
+   "date": "2026-10-04",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Khachanov K. vs Hurkacz H.",
+   "score": "0-2",
+   "probs": [
+    0.57,
+    0.43
+   ],
+   "pick": "Khachanov K.",
+   "result": "Hurkacz H.",
+   "hit": false,
+   "odds_avg": [
+    1.6,
+    2.25
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Rybakina E. vs Charaeva A.",
+   "score": "1-2",
+   "probs": [
+    0.91,
+    0.09
+   ],
+   "pick": "Rybakina E.",
+   "result": "Charaeva A.",
+   "hit": false,
+   "odds_avg": [
+    1.04,
+    10.75
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Kartal S. vs Wang Xin.",
+   "score": "2-0",
+   "probs": [
+    0.507,
+    0.493
+   ],
+   "pick": "Kartal S.",
+   "result": "Kartal S.",
+   "hit": true,
+   "odds_avg": [
+    1.82,
+    1.93
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Bouzkova M. vs Birrell K.",
+   "score": "2-0",
+   "probs": [
+    0.652,
+    0.348
+   ],
+   "pick": "Bouzkova M.",
+   "result": "Bouzkova M.",
+   "hit": true,
+   "odds_avg": [
+    1.42,
+    2.75
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Sun X. vs Bucsa C.",
+   "score": "2-0",
+   "probs": [
+    0.319,
+    0.681
+   ],
+   "pick": "Bucsa C.",
+   "result": "Sun X.",
+   "hit": false,
+   "odds_avg": [
+    2.92,
+    1.38
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Dart H. vs Jovic I.",
+   "score": "1-2",
+   "probs": [
+    0.128,
+    0.872
+   ],
+   "pick": "Jovic I.",
+   "result": "Jovic I.",
+   "hit": true,
+   "odds_avg": [
+    7.92,
+    1.07
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Bencic B. vs Zakharova A.",
+   "score": "2-0",
+   "probs": [
+    0.792,
+    0.208
+   ],
+   "pick": "Bencic B.",
+   "result": "Bencic B.",
+   "hit": true,
+   "odds_avg": [
+    1.2,
+    4.34
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Rakhimova K. vs Fernandez L.A.",
+   "score": "2-1",
+   "probs": [
+    0.287,
+    0.713
+   ],
+   "pick": "Fernandez L.A.",
+   "result": "Rakhimova K.",
+   "hit": false,
+   "odds_avg": [
+    3.52,
+    1.28
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Svitolina E. vs Siniakova K.",
+   "score": "2-1",
+   "probs": [
+    0.771,
+    0.229
+   ],
+   "pick": "Svitolina E.",
+   "result": "Svitolina E.",
+   "hit": true,
+   "odds_avg": [
+    1.25,
+    3.69
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Swiatek I. vs Gao X.",
+   "score": "2-0",
+   "probs": [
+    0.925,
+    0.075
+   ],
+   "pick": "Swiatek I.",
+   "result": "Swiatek I.",
+   "hit": true,
+   "odds_avg": [
+    1.02,
+    15.46
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Badosa P. vs Ostapenko J.",
+   "score": "0-2",
+   "probs": [
+    0.554,
+    0.446
+   ],
+   "pick": "Badosa P.",
+   "result": "Ostapenko J.",
+   "hit": false,
+   "odds_avg": [
+    1.58,
+    2.28
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Sakkari M. vs Hunter S.",
+   "score": "2-0",
+   "probs": [
+    0.711,
+    0.289
+   ],
+   "pick": "Sakkari M.",
+   "result": "Sakkari M.",
+   "hit": true,
+   "odds_avg": [
+    1.35,
+    3.04
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Mertens E. vs Volynets K.",
+   "score": "2-1",
+   "probs": [
+    0.608,
+    0.392
+   ],
+   "pick": "Mertens E.",
+   "result": "Mertens E.",
+   "hit": true,
+   "odds_avg": [
+    1.79,
+    1.98
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Vekic D. vs Zhu L.",
+   "score": "2-1",
+   "probs": [
+    0.624,
+    0.376
+   ],
+   "pick": "Vekic D.",
+   "result": "Vekic D.",
+   "hit": true,
+   "odds_avg": [
+    1.5,
+    2.54
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Li A. vs Krueger A.",
+   "score": "2-0",
+   "probs": [
+    0.56,
+    0.44
+   ],
+   "pick": "Li A.",
+   "result": "Li A.",
+   "hit": true,
+   "odds_avg": [
+    1.73,
+    2.06
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "WTA",
+   "surface": "Hard",
+   "match": "Osorio M. vs Gauff C.",
+   "score": "1-2",
+   "probs": [
+    0.119,
+    0.881
+   ],
+   "pick": "Gauff C.",
+   "result": "Gauff C.",
+   "hit": true,
+   "odds_avg": [
+    8.34,
+    1.07
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Lehecka J. vs Humbert U.",
+   "score": "2-1",
+   "probs": [
+    0.584,
+    0.416
+   ],
+   "pick": "Lehecka J.",
+   "result": "Lehecka J.",
+   "hit": true,
+   "odds_avg": [
+    1.57,
+    2.31
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Berrettini M. vs Vallejo D.",
+   "score": "0-2",
+   "probs": [
+    0.599,
+    0.401
+   ],
+   "pick": "Berrettini M.",
+   "result": "Vallejo D.",
+   "hit": false,
+   "odds_avg": [
+    1.56,
+    2.34
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Alcaraz C. vs Arnaldi M.",
+   "score": "2-0",
+   "probs": [
+    0.9,
+    0.1
+   ],
+   "pick": "Alcaraz C.",
+   "result": "Alcaraz C.",
+   "hit": true,
+   "odds_avg": [
+    1.05,
+    9.5
+   ]
+  },
+  {
+   "date": "2026-10-03",
+   "tour": "ATP",
+   "surface": "Hard",
+   "match": "Shapovalov D. vs Tabilo A.",
+   "score": "2-1",
+   "probs": [
+    0.525,
+    0.475
+   ],
+   "pick": "Shapovalov D.",
+   "result": "Shapovalov D.",
+   "hit": true,
+   "odds_avg": [
+    1.66,
+    2.15
+   ]
+  }
+ ]
+}

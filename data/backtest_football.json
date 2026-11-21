@@ -1,0 +1,2168 @@
+{
+ "sport": "football",
+ "data": {
+  "xg_proxy": {
+   "shots": 0.0805,
+   "sot": 0.1014,
+   "corners": -0.0237,
+   "ht_goals": 0.22,
+   "const": -0.0965
+  },
+  "rows": 9254,
+  "rows_real_xg": 346
+ },
+ "train_seasons": [
+  "2223",
+  "2324",
+  "2425"
+ ],
+ "test_seasons": [
+  "2526",
+  "2627"
+ ],
+ "tuned_stats_weights": {
+  "xg_poisson": 0.4008,
+  "goals_poisson": 0.1881,
+  "elo": 0.4094,
+  "form": 0.0016,
+  "table": 0.0,
+  "h2h": 0.0001
+ },
+ "market_share": 0.65,
+ "default_stats_weights": {
+  "xg_poisson": 0.4,
+  "elo": 0.38,
+  "goals_poisson": 0.14,
+  "form": 0.03,
+  "table": 0.03,
+  "h2h": 0.02
+ },
+ "train": {
+  "label": "train (weights fitted here)",
+  "matches": 5330,
+  "components": {
+   "base_rates": {
+    "log_loss": 1.0725,
+    "brier": 0.649,
+    "accuracy": 0.4364
+   },
+   "market": {
+    "log_loss": 0.9637,
+    "brier": 0.5728,
+    "accuracy": 0.5486
+   },
+   "xg_poisson": {
+    "log_loss": 0.9913,
+    "brier": 0.5916,
+    "accuracy": 0.5203
+   },
+   "goals_poisson": {
+    "log_loss": 0.9973,
+    "brier": 0.5944,
+    "accuracy": 0.5229
+   },
+   "elo": {
+    "log_loss": 0.987,
+    "brier": 0.5882,
+    "accuracy": 0.5336
+   },
+   "form": {
+    "log_loss": 1.0333,
+    "brier": 0.6195,
+    "accuracy": 0.4992
+   },
+   "table": {
+    "log_loss": 1.0027,
+    "brier": 0.5992,
+    "accuracy": 0.5156
+   },
+   "h2h": {
+    "log_loss": 1.0526,
+    "brier": 0.633,
+    "accuracy": 0.4602
+   }
+  },
+  "blends": {
+   "final": {
+    "weights": {
+     "xg_poisson": 0.1403,
+     "goals_poisson": 0.0658,
+     "elo": 0.1433,
+     "form": 0.0006,
+     "table": 0.0,
+     "h2h": 0.0,
+     "market": 0.65
+    },
+    "log_loss": 0.967,
+    "brier": 0.575,
+    "accuracy": 0.5477,
+    "calibration": [
+     {
+      "bin": "30%-40%",
+      "n": 913,
+      "predicted": 0.377,
+      "actual": 0.426
+     },
+     {
+      "bin": "40%-50%",
+      "n": 1766,
+      "predicted": 0.447,
+      "actual": 0.458
+     },
+     {
+      "bin": "50%-60%",
+      "n": 1328,
+      "predicted": 0.547,
+      "actual": 0.573
+     },
+     {
+      "bin": "60%-70%",
+      "n": 802,
+      "predicted": 0.648,
+      "actual": 0.683
+     },
+     {
+      "bin": "70%-80%",
+      "n": 405,
+      "predicted": 0.742,
+      "actual": 0.763
+     },
+     {
+      "bin": "80%-90%",
+      "n": 115,
+      "predicted": 0.834,
+      "actual": 0.896
+     },
+     {
+      "bin": "90%-100%",
+      "n": 1,
+      "predicted": 0.909,
+      "actual": 1.0
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 5330,
+      "hit_rate": 0.548,
+      "profit_units": 14.4,
+      "roi": 0.003,
+      "avg_odds": 1.92
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 1323,
+      "hit_rate": 0.726,
+      "profit_units": -14.8,
+      "roi": -0.011,
+      "avg_odds": 1.38
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 521,
+      "hit_rate": 0.793,
+      "profit_units": -8.4,
+      "roi": -0.016,
+      "avg_odds": 1.25
+     },
+     "value_edge>=2%@avg": {
+      "bets": 756,
+      "hit_rate": 0.344,
+      "profit_units": -27.5,
+      "roi": -0.036,
+      "avg_odds": 3.03
+     },
+     "value_edge>=4%@avg": {
+      "bets": 395,
+      "hit_rate": 0.349,
+      "profit_units": 11.9,
+      "roi": 0.03,
+      "avg_odds": 3.19
+     },
+     "value_edge>=8%@avg": {
+      "bets": 133,
+      "hit_rate": 0.338,
+      "profit_units": 7.8,
+      "roi": 0.059,
+      "avg_odds": 3.39
+     },
+     "value_edge>=2%@max": {
+      "bets": 2453,
+      "hit_rate": 0.337,
+      "profit_units": -35.0,
+      "roi": -0.014,
+      "avg_odds": 3.17
+     },
+     "value_edge>=4%@max": {
+      "bets": 1470,
+      "hit_rate": 0.325,
+      "profit_units": -28.9,
+      "roi": -0.02,
+      "avg_odds": 3.24
+     },
+     "value_edge>=8%@max": {
+      "bets": 491,
+      "hit_rate": 0.295,
+      "profit_units": -23.2,
+      "roi": -0.047,
+      "avg_odds": 3.45
+     }
+    }
+   },
+   "stats_model": {
+    "weights": {
+     "xg_poisson": 0.4008,
+     "goals_poisson": 0.1881,
+     "elo": 0.4094,
+     "form": 0.0016,
+     "table": 0.0,
+     "h2h": 0.0001,
+     "market": 0.0
+    },
+    "log_loss": 0.9798,
+    "brier": 0.5837,
+    "accuracy": 0.5362,
+    "calibration": [
+     {
+      "bin": "30%-40%",
+      "n": 763,
+      "predicted": 0.381,
+      "actual": 0.406
+     },
+     {
+      "bin": "40%-50%",
+      "n": 1874,
+      "predicted": 0.448,
+      "actual": 0.461
+     },
+     {
+      "bin": "50%-60%",
+      "n": 1379,
+      "predicted": 0.546,
+      "actual": 0.542
+     },
+     {
+      "bin": "60%-70%",
+      "n": 855,
+      "predicted": 0.647,
+      "actual": 0.68
+     },
+     {
+      "bin": "70%-80%",
+      "n": 358,
+      "predicted": 0.741,
+      "actual": 0.754
+     },
+     {
+      "bin": "80%-90%",
+      "n": 101,
+      "predicted": 0.833,
+      "actual": 0.851
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 5330,
+      "hit_rate": 0.536,
+      "profit_units": -70.9,
+      "roi": -0.013,
+      "avg_odds": 1.96
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 1314,
+      "hit_rate": 0.713,
+      "profit_units": -18.2,
+      "roi": -0.014,
+      "avg_odds": 1.41
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 459,
+      "hit_rate": 0.776,
+      "profit_units": -14.6,
+      "roi": -0.032,
+      "avg_odds": 1.26
+     },
+     "value_edge>=2%@avg": {
+      "bets": 2709,
+      "hit_rate": 0.338,
+      "profit_units": -276.4,
+      "roi": -0.102,
+      "avg_odds": 2.97
+     },
+     "value_edge>=4%@avg": {
+      "bets": 2320,
+      "hit_rate": 0.33,
+      "profit_units": -225.4,
+      "roi": -0.097,
+      "avg_odds": 3.04
+     },
+     "value_edge>=8%@avg": {
+      "bets": 1629,
+      "hit_rate": 0.311,
+      "profit_units": -178.0,
+      "roi": -0.109,
+      "avg_odds": 3.19
+     },
+     "value_edge>=2%@max": {
+      "bets": 3560,
+      "hit_rate": 0.35,
+      "profit_units": -222.8,
+      "roi": -0.063,
+      "avg_odds": 3.02
+     },
+     "value_edge>=4%@max": {
+      "bets": 3097,
+      "hit_rate": 0.336,
+      "profit_units": -206.4,
+      "roi": -0.067,
+      "avg_odds": 3.1
+     },
+     "value_edge>=8%@max": {
+      "bets": 2281,
+      "hit_rate": 0.322,
+      "profit_units": -145.6,
+      "roi": -0.064,
+      "avg_odds": 3.24
+     }
+    }
+   },
+   "market_only": {
+    "weights": {
+     "market": 1.0
+    },
+    "log_loss": 0.9637,
+    "brier": 0.5728,
+    "accuracy": 0.5486,
+    "calibration": [
+     {
+      "bin": "30%-40%",
+      "n": 902,
+      "predicted": 0.376,
+      "actual": 0.417
+     },
+     {
+      "bin": "40%-50%",
+      "n": 1714,
+      "predicted": 0.447,
+      "actual": 0.459
+     },
+     {
+      "bin": "50%-60%",
+      "n": 1293,
+      "predicted": 0.549,
+      "actual": 0.565
+     },
+     {
+      "bin": "60%-70%",
+      "n": 802,
+      "predicted": 0.648,
+      "actual": 0.675
+     },
+     {
+      "bin": "70%-80%",
+      "n": 466,
+      "predicted": 0.744,
+      "actual": 0.77
+     },
+     {
+      "bin": "80%-90%",
+      "n": 150,
+      "predicted": 0.838,
+      "actual": 0.853
+     },
+     {
+      "bin": "90%-100%",
+      "n": 3,
+      "predicted": 0.91,
+      "actual": 1.0
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 5330,
+      "hit_rate": 0.549,
+      "profit_units": 24.8,
+      "roi": 0.005,
+      "avg_odds": 1.92
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 1421,
+      "hit_rate": 0.726,
+      "profit_units": -3.2,
+      "roi": -0.002,
+      "avg_odds": 1.39
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 619,
+      "hit_rate": 0.792,
+      "profit_units": -2.7,
+      "roi": -0.004,
+      "avg_odds": 1.26
+     },
+     "value_edge>=2%@avg": {
+      "bets": 314,
+      "hit_rate": 0.5,
+      "profit_units": 96.4,
+      "roi": 0.307,
+      "avg_odds": 2.78
+     },
+     "value_edge>=4%@avg": {
+      "bets": 116,
+      "hit_rate": 0.491,
+      "profit_units": 36.9,
+      "roi": 0.318,
+      "avg_odds": 2.81
+     },
+     "value_edge>=8%@avg": {
+      "bets": 21,
+      "hit_rate": 0.476,
+      "profit_units": 8.3,
+      "roi": 0.397,
+      "avg_odds": 3.24
+     },
+     "value_edge>=2%@max": {
+      "bets": 2289,
+      "hit_rate": 0.387,
+      "profit_units": 234.8,
+      "roi": 0.103,
+      "avg_odds": 3.1
+     },
+     "value_edge>=4%@max": {
+      "bets": 1047,
+      "hit_rate": 0.381,
+      "profit_units": 134.0,
+      "roi": 0.128,
+      "avg_odds": 3.19
+     },
+     "value_edge>=8%@max": {
+      "bets": 160,
+      "hit_rate": 0.419,
+      "profit_units": 48.6,
+      "roi": 0.304,
+      "avg_odds": 3.36
+     }
+    }
+   }
+  },
+  "market_share_curve": [
+   {
+    "market_share": 0.0,
+    "log_loss": 0.9798,
+    "brier": 0.5837,
+    "accuracy": 0.5362
+   },
+   {
+    "market_share": 0.2,
+    "log_loss": 0.9751,
+    "brier": 0.5805,
+    "accuracy": 0.5386
+   },
+   {
+    "market_share": 0.4,
+    "log_loss": 0.9712,
+    "brier": 0.5778,
+    "accuracy": 0.5403
+   },
+   {
+    "market_share": 0.5,
+    "log_loss": 0.9695,
+    "brier": 0.5766,
+    "accuracy": 0.543
+   },
+   {
+    "market_share": 0.6,
+    "log_loss": 0.968,
+    "brier": 0.5756,
+    "accuracy": 0.5458
+   },
+   {
+    "market_share": 0.65,
+    "log_loss": 0.9673,
+    "brier": 0.5752,
+    "accuracy": 0.5467
+   },
+   {
+    "market_share": 0.7,
+    "log_loss": 0.9666,
+    "brier": 0.5747,
+    "accuracy": 0.5471
+   },
+   {
+    "market_share": 0.8,
+    "log_loss": 0.9654,
+    "brier": 0.5739,
+    "accuracy": 0.5471
+   },
+   {
+    "market_share": 0.9,
+    "log_loss": 0.9645,
+    "brier": 0.5733,
+    "accuracy": 0.548
+   },
+   {
+    "market_share": 1.0,
+    "log_loss": 0.9637,
+    "brier": 0.5728,
+    "accuracy": 0.5486
+   }
+  ]
+ },
+ "test": {
+  "label": "test (out-of-sample)",
+  "matches": 2098,
+  "components": {
+   "base_rates": {
+    "log_loss": 1.0706,
+    "brier": 0.6476,
+    "accuracy": 0.4418
+   },
+   "market": {
+    "log_loss": 0.9743,
+    "brier": 0.5798,
+    "accuracy": 0.5381
+   },
+   "xg_poisson": {
+    "log_loss": 0.9956,
+    "brier": 0.594,
+    "accuracy": 0.5224
+   },
+   "goals_poisson": {
+    "log_loss": 1.0091,
+    "brier": 0.6018,
+    "accuracy": 0.5143
+   },
+   "elo": {
+    "log_loss": 0.9968,
+    "brier": 0.594,
+    "accuracy": 0.5176
+   },
+   "form": {
+    "log_loss": 1.0531,
+    "brier": 0.634,
+    "accuracy": 0.4805
+   },
+   "table": {
+    "log_loss": 1.0211,
+    "brier": 0.6117,
+    "accuracy": 0.4914
+   },
+   "h2h": {
+    "log_loss": 1.0549,
+    "brier": 0.6324,
+    "accuracy": 0.4614
+   }
+  },
+  "blends": {
+   "final": {
+    "weights": {
+     "xg_poisson": 0.1403,
+     "goals_poisson": 0.0658,
+     "elo": 0.1433,
+     "form": 0.0006,
+     "table": 0.0,
+     "h2h": 0.0,
+     "market": 0.65
+    },
+    "log_loss": 0.977,
+    "brier": 0.5813,
+    "accuracy": 0.5362,
+    "calibration": [
+     {
+      "bin": "30%-40%",
+      "n": 379,
+      "predicted": 0.377,
+      "actual": 0.401
+     },
+     {
+      "bin": "40%-50%",
+      "n": 758,
+      "predicted": 0.448,
+      "actual": 0.475
+     },
+     {
+      "bin": "50%-60%",
+      "n": 487,
+      "predicted": 0.548,
+      "actual": 0.538
+     },
+     {
+      "bin": "60%-70%",
+      "n": 298,
+      "predicted": 0.644,
+      "actual": 0.695
+     },
+     {
+      "bin": "70%-80%",
+      "n": 144,
+      "predicted": 0.744,
+      "actual": 0.792
+     },
+     {
+      "bin": "80%-90%",
+      "n": 32,
+      "predicted": 0.835,
+      "actual": 0.938
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 2098,
+      "hit_rate": 0.536,
+      "profit_units": -50.7,
+      "roi": -0.024,
+      "avg_odds": 1.91
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 474,
+      "hit_rate": 0.741,
+      "profit_units": -0.8,
+      "roi": -0.002,
+      "avg_odds": 1.36
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 176,
+      "hit_rate": 0.818,
+      "profit_units": -0.3,
+      "roi": -0.002,
+      "avg_odds": 1.23
+     },
+     "value_edge>=2%@avg": {
+      "bets": 179,
+      "hit_rate": 0.307,
+      "profit_units": -11.8,
+      "roi": -0.066,
+      "avg_odds": 3.15
+     },
+     "value_edge>=4%@avg": {
+      "bets": 104,
+      "hit_rate": 0.327,
+      "profit_units": 6.2,
+      "roi": 0.059,
+      "avg_odds": 3.32
+     },
+     "value_edge>=8%@avg": {
+      "bets": 40,
+      "hit_rate": 0.35,
+      "profit_units": 8.4,
+      "roi": 0.209,
+      "avg_odds": 3.45
+     },
+     "value_edge>=2%@max": {
+      "bets": 551,
+      "hit_rate": 0.298,
+      "profit_units": -36.9,
+      "roi": -0.067,
+      "avg_odds": 3.24
+     },
+     "value_edge>=4%@max": {
+      "bets": 335,
+      "hit_rate": 0.304,
+      "profit_units": -4.4,
+      "roi": -0.013,
+      "avg_odds": 3.32
+     },
+     "value_edge>=8%@max": {
+      "bets": 132,
+      "hit_rate": 0.333,
+      "profit_units": 21.9,
+      "roi": 0.166,
+      "avg_odds": 3.55
+     }
+    }
+   },
+   "stats_model": {
+    "weights": {
+     "xg_poisson": 0.4008,
+     "goals_poisson": 0.1881,
+     "elo": 0.4094,
+     "form": 0.0016,
+     "table": 0.0,
+     "h2h": 0.0001,
+     "market": 0.0
+    },
+    "log_loss": 0.9887,
+    "brier": 0.5889,
+    "accuracy": 0.5267,
+    "calibration": [
+     {
+      "bin": "30%-40%",
+      "n": 318,
+      "predicted": 0.381,
+      "actual": 0.377
+     },
+     {
+      "bin": "40%-50%",
+      "n": 768,
+      "predicted": 0.448,
+      "actual": 0.47
+     },
+     {
+      "bin": "50%-60%",
+      "n": 537,
+      "predicted": 0.548,
+      "actual": 0.529
+     },
+     {
+      "bin": "60%-70%",
+      "n": 321,
+      "predicted": 0.646,
+      "actual": 0.667
+     },
+     {
+      "bin": "70%-80%",
+      "n": 120,
+      "predicted": 0.742,
+      "actual": 0.8
+     },
+     {
+      "bin": "80%-90%",
+      "n": 34,
+      "predicted": 0.835,
+      "actual": 0.882
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 2098,
+      "hit_rate": 0.527,
+      "profit_units": -67.3,
+      "roi": -0.032,
+      "avg_odds": 1.96
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 475,
+      "hit_rate": 0.716,
+      "profit_units": -6.2,
+      "roi": -0.013,
+      "avg_odds": 1.41
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 154,
+      "hit_rate": 0.818,
+      "profit_units": 0.3,
+      "roi": 0.002,
+      "avg_odds": 1.23
+     },
+     "value_edge>=2%@avg": {
+      "bets": 962,
+      "hit_rate": 0.334,
+      "profit_units": -96.0,
+      "roi": -0.1,
+      "avg_odds": 2.96
+     },
+     "value_edge>=4%@avg": {
+      "bets": 786,
+      "hit_rate": 0.33,
+      "profit_units": -61.1,
+      "roi": -0.078,
+      "avg_odds": 3.04
+     },
+     "value_edge>=8%@avg": {
+      "bets": 554,
+      "hit_rate": 0.318,
+      "profit_units": -29.1,
+      "roi": -0.053,
+      "avg_odds": 3.18
+     },
+     "value_edge>=2%@max": {
+      "bets": 1264,
+      "hit_rate": 0.345,
+      "profit_units": -85.8,
+      "roi": -0.068,
+      "avg_odds": 3.01
+     },
+     "value_edge>=4%@max": {
+      "bets": 1082,
+      "hit_rate": 0.332,
+      "profit_units": -72.2,
+      "roi": -0.067,
+      "avg_odds": 3.09
+     },
+     "value_edge>=8%@max": {
+      "bets": 765,
+      "hit_rate": 0.324,
+      "profit_units": -16.2,
+      "roi": -0.021,
+      "avg_odds": 3.27
+     }
+    }
+   },
+   "market_only": {
+    "weights": {
+     "market": 1.0
+    },
+    "log_loss": 0.9743,
+    "brier": 0.5798,
+    "accuracy": 0.5381,
+    "calibration": [
+     {
+      "bin": "30%-40%",
+      "n": 392,
+      "predicted": 0.377,
+      "actual": 0.403
+     },
+     {
+      "bin": "40%-50%",
+      "n": 709,
+      "predicted": 0.447,
+      "actual": 0.48
+     },
+     {
+      "bin": "50%-60%",
+      "n": 487,
+      "predicted": 0.547,
+      "actual": 0.528
+     },
+     {
+      "bin": "60%-70%",
+      "n": 302,
+      "predicted": 0.646,
+      "actual": 0.682
+     },
+     {
+      "bin": "70%-80%",
+      "n": 163,
+      "predicted": 0.745,
+      "actual": 0.779
+     },
+     {
+      "bin": "80%-90%",
+      "n": 44,
+      "predicted": 0.834,
+      "actual": 0.909
+     },
+     {
+      "bin": "90%-100%",
+      "n": 1,
+      "predicted": 0.919,
+      "actual": 1.0
+     }
+    ],
+    "betting": {
+     "top_pick_all@avg": {
+      "bets": 2098,
+      "hit_rate": 0.538,
+      "profit_units": -39.8,
+      "roi": -0.019,
+      "avg_odds": 1.91
+     },
+     "top_pick_conf>=60%@avg": {
+      "bets": 510,
+      "hit_rate": 0.733,
+      "profit_units": -1.8,
+      "roi": -0.004,
+      "avg_odds": 1.37
+     },
+     "top_pick_conf>=70%@avg": {
+      "bets": 208,
+      "hit_rate": 0.808,
+      "profit_units": -0.5,
+      "roi": -0.002,
+      "avg_odds": 1.24
+     },
+     "value_edge>=2%@avg": {
+      "bets": 40,
+      "hit_rate": 0.375,
+      "profit_units": 1.5,
+      "roi": 0.039,
+      "avg_odds": 2.93
+     },
+     "value_edge>=4%@avg": {
+      "bets": 14,
+      "hit_rate": 0.429,
+      "profit_units": 1.8,
+      "roi": 0.126,
+      "avg_odds": 3.0
+     },
+     "value_edge>=8%@avg": {
+      "bets": 2,
+      "hit_rate": 1.0,
+      "profit_units": 2.9,
+      "roi": 1.425,
+      "avg_odds": 2.42
+     },
+     "value_edge>=2%@max": {
+      "bets": 331,
+      "hit_rate": 0.372,
+      "profit_units": 44.9,
+      "roi": 0.136,
+      "avg_odds": 3.15
+     },
+     "value_edge>=4%@max": {
+      "bets": 149,
+      "hit_rate": 0.396,
+      "profit_units": 43.5,
+      "roi": 0.292,
+      "avg_odds": 3.29
+     },
+     "value_edge>=8%@max": {
+      "bets": 33,
+      "hit_rate": 0.364,
+      "profit_units": 8.8,
+      "roi": 0.265,
+      "avg_odds": 3.39
+     }
+    }
+   }
+  },
+  "market_share_curve": [
+   {
+    "market_share": 0.0,
+    "log_loss": 0.9887,
+    "brier": 0.5889,
+    "accuracy": 0.5267
+   },
+   {
+    "market_share": 0.2,
+    "log_loss": 0.9842,
+    "brier": 0.586,
+    "accuracy": 0.5291
+   },
+   {
+    "market_share": 0.4,
+    "log_loss": 0.9806,
+    "brier": 0.5836,
+    "accuracy": 0.5286
+   },
+   {
+    "market_share": 0.5,
+    "log_loss": 0.9791,
+    "brier": 0.5827,
+    "accuracy": 0.5272
+   },
+   {
+    "market_share": 0.6,
+    "log_loss": 0.9778,
+    "brier": 0.5818,
+    "accuracy": 0.5296
+   },
+   {
+    "market_share": 0.65,
+    "log_loss": 0.9772,
+    "brier": 0.5814,
+    "accuracy": 0.53
+   },
+   {
+    "market_share": 0.7,
+    "log_loss": 0.9766,
+    "brier": 0.5811,
+    "accuracy": 0.53
+   },
+   {
+    "market_share": 0.8,
+    "log_loss": 0.9757,
+    "brier": 0.5805,
+    "accuracy": 0.5315
+   },
+   {
+    "market_share": 0.9,
+    "log_loss": 0.9749,
+    "brier": 0.5801,
+    "accuracy": 0.5357
+   },
+   {
+    "market_share": 1.0,
+    "log_loss": 0.9743,
+    "brier": 0.5798,
+    "accuracy": 0.5381
+   }
+  ],
+  "per_league": {
+   "BUNDESLIGA": {
+    "n": 360,
+    "log_loss": 0.9577,
+    "brier": 0.5671,
+    "accuracy": 0.5611
+   },
+   "EPL": {
+    "n": 450,
+    "log_loss": 1.0126,
+    "brier": 0.6075,
+    "accuracy": 0.4911
+   },
+   "LALIGA": {
+    "n": 469,
+    "log_loss": 0.9608,
+    "brier": 0.569,
+    "accuracy": 0.5416
+   },
+   "LIGUE1": {
+    "n": 369,
+    "log_loss": 0.9781,
+    "brier": 0.5829,
+    "accuracy": 0.5393
+   },
+   "SERIEA": {
+    "n": 450,
+    "log_loss": 0.9728,
+    "brier": 0.5781,
+    "accuracy": 0.5533
+   }
+  },
+  "per_season": {
+   "2526": {
+    "n": 1752,
+    "log_loss": 0.9804,
+    "brier": 0.5838,
+    "accuracy": 0.5342
+   },
+   "2627": {
+    "n": 346,
+    "log_loss": 0.9596,
+    "brier": 0.5688,
+    "accuracy": 0.5462
+   }
+  },
+  "over_under_2_5": {
+   "accuracy": 0.555,
+   "actual_over_rate": 0.543,
+   "log_loss": 0.6848
+  },
+  "no_draw": {
+   "matches": 1569,
+   "draws": 529,
+   "draw_rate": 0.252,
+   "accuracy": 0.716,
+   "hits": 1124
+  }
+ },
+ "recent_predictions": [
+  {
+   "date": "2026-10-21",
+   "league": "LALIGA",
+   "match": "Levante - Ath Bilbao",
+   "score": "3-1",
+   "probs": [
+    0.311,
+    0.285,
+    0.403
+   ],
+   "pick": "A",
+   "result": "H",
+   "hit": false,
+   "odds_avg": [
+    3.42,
+    3.29,
+    2.15
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "league": "SERIEA",
+   "match": "Parma - Torino",
+   "score": "0-3",
+   "probs": [
+    0.304,
+    0.305,
+    0.392
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    2.99,
+    3.05,
+    2.46
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "league": "SERIEA",
+   "match": "Monza - Cagliari",
+   "score": "4-0",
+   "probs": [
+    0.371,
+    0.287,
+    0.342
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    2.36,
+    3.16,
+    3.04
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "league": "LALIGA",
+   "match": "Getafe - Vallecano",
+   "score": "1-1",
+   "probs": [
+    0.327,
+    0.32,
+    0.353
+   ],
+   "pick": "A",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    2.85,
+    2.98,
+    2.62
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "league": "EPL",
+   "match": "Tottenham - Coventry",
+   "score": "3-1",
+   "probs": [
+    0.55,
+    0.24,
+    0.21
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.46,
+    4.55,
+    6.23
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "SERIEA",
+   "match": "Udinese - Lecce",
+   "score": "0-3",
+   "probs": [
+    0.518,
+    0.264,
+    0.218
+   ],
+   "pick": "H",
+   "result": "A",
+   "hit": false,
+   "odds_avg": [
+    1.87,
+    3.45,
+    4.14
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "SERIEA",
+   "match": "Milan - Atalanta",
+   "score": "3-2",
+   "probs": [
+    0.528,
+    0.247,
+    0.225
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.81,
+    3.7,
+    4.12
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "SERIEA",
+   "match": "Juventus - Lazio",
+   "score": "0-3",
+   "probs": [
+    0.561,
+    0.246,
+    0.193
+   ],
+   "pick": "H",
+   "result": "A",
+   "hit": false,
+   "odds_avg": [
+    1.66,
+    3.76,
+    5.03
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "SERIEA",
+   "match": "Fiorentina - Como",
+   "score": "1-3",
+   "probs": [
+    0.274,
+    0.257,
+    0.469
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    3.28,
+    3.61,
+    2.06
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LIGUE1",
+   "match": "Paris FC - Rennes",
+   "score": "4-3",
+   "probs": [
+    0.443,
+    0.26,
+    0.297
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    2.26,
+    3.5,
+    2.93
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LIGUE1",
+   "match": "Lyon - Nice",
+   "score": "2-1",
+   "probs": [
+    0.557,
+    0.239,
+    0.205
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.66,
+    3.98,
+    4.63
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LIGUE1",
+   "match": "Lorient - Monaco",
+   "score": "1-0",
+   "probs": [
+    0.274,
+    0.273,
+    0.453
+   ],
+   "pick": "A",
+   "result": "H",
+   "hit": false,
+   "odds_avg": [
+    3.48,
+    3.46,
+    2.03
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LIGUE1",
+   "match": "Le Havre - Auxerre",
+   "score": "1-3",
+   "probs": [
+    0.409,
+    0.277,
+    0.315
+   ],
+   "pick": "H",
+   "result": "A",
+   "hit": false,
+   "odds_avg": [
+    2.28,
+    3.36,
+    3.01
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LIGUE1",
+   "match": "Angers - Marseille",
+   "score": "2-5",
+   "probs": [
+    0.269,
+    0.256,
+    0.475
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    3.16,
+    3.71,
+    2.07
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LALIGA",
+   "match": "Real Madrid - Sevilla",
+   "score": "4-1",
+   "probs": [
+    0.746,
+    0.16,
+    0.094
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.23,
+    6.27,
+    10.23
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LALIGA",
+   "match": "Osasuna - Santander",
+   "score": "2-0",
+   "probs": [
+    0.486,
+    0.253,
+    0.261
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.98,
+    3.61,
+    3.46
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LALIGA",
+   "match": "Malaga - Sociedad",
+   "score": "2-5",
+   "probs": [
+    0.31,
+    0.271,
+    0.419
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    3.14,
+    3.48,
+    2.15
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "LALIGA",
+   "match": "Celta - Alaves",
+   "score": "2-1",
+   "probs": [
+    0.424,
+    0.297,
+    0.279
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    2.1,
+    3.22,
+    3.5
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "EPL",
+   "match": "Nott'm Forest - Arsenal",
+   "score": "0-1",
+   "probs": [
+    0.172,
+    0.252,
+    0.576
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    5.59,
+    3.82,
+    1.6
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "EPL",
+   "match": "Leeds - Man United",
+   "score": "1-1",
+   "probs": [
+    0.374,
+    0.277,
+    0.35
+   ],
+   "pick": "H",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    2.32,
+    3.55,
+    2.82
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "EPL",
+   "match": "Brighton - Crystal Palace",
+   "score": "5-0",
+   "probs": [
+    0.616,
+    0.215,
+    0.169
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.53,
+    4.42,
+    5.35
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "EPL",
+   "match": "Bournemouth - Sunderland",
+   "score": "2-0",
+   "probs": [
+    0.466,
+    0.276,
+    0.258
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    2.04,
+    3.51,
+    3.44
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "BUNDESLIGA",
+   "match": "M'gladbach - Hoffenheim",
+   "score": "1-2",
+   "probs": [
+    0.322,
+    0.241,
+    0.436
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    3.05,
+    3.94,
+    2.04
+   ]
+  },
+  {
+   "date": "2026-10-18",
+   "league": "BUNDESLIGA",
+   "match": "Leverkusen - Freiburg",
+   "score": "2-1",
+   "probs": [
+    0.569,
+    0.221,
+    0.21
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.7,
+    4.14,
+    4.15
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "SERIEA",
+   "match": "Venezia - Napoli",
+   "score": "1-0",
+   "probs": [
+    0.189,
+    0.23,
+    0.581
+   ],
+   "pick": "A",
+   "result": "H",
+   "hit": false,
+   "odds_avg": [
+    4.67,
+    4.0,
+    1.68
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "SERIEA",
+   "match": "Roma - Genoa",
+   "score": "2-0",
+   "probs": [
+    0.658,
+    0.212,
+    0.131
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.45,
+    4.48,
+    6.67
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "SERIEA",
+   "match": "Bologna - Inter",
+   "score": "1-3",
+   "probs": [
+    0.18,
+    0.229,
+    0.591
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    5.31,
+    4.04,
+    1.59
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "LIGUE1",
+   "match": "Troyes - Lens",
+   "score": "1-3",
+   "probs": [
+    0.218,
+    0.236,
+    0.546
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    3.84,
+    3.89,
+    1.82
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "LIGUE1",
+   "match": "Strasbourg - Paris SG",
+   "score": "1-3",
+   "probs": [
+    0.18,
+    0.199,
+    0.621
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    6.35,
+    5.3,
+    1.38
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "LIGUE1",
+   "match": "Lille - Brest",
+   "score": "1-1",
+   "probs": [
+    0.502,
+    0.257,
+    0.241
+   ],
+   "pick": "H",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    1.84,
+    3.76,
+    3.88
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "LALIGA",
+   "match": "Villarreal - Elche",
+   "score": "0-0",
+   "probs": [
+    0.653,
+    0.196,
+    0.151
+   ],
+   "pick": "H",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    1.44,
+    4.84,
+    6.17
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "LALIGA",
+   "match": "Valencia - Ath Bilbao",
+   "score": "0-0",
+   "probs": [
+    0.312,
+    0.292,
+    0.396
+   ],
+   "pick": "A",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    3.26,
+    3.34,
+    2.19
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "LALIGA",
+   "match": "Espanol - Ath Madrid",
+   "score": "0-1",
+   "probs": [
+    0.219,
+    0.251,
+    0.529
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    4.68,
+    3.84,
+    1.7
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "LALIGA",
+   "match": "Betis - Barcelona",
+   "score": "2-5",
+   "probs": [
+    0.161,
+    0.182,
+    0.657
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    6.0,
+    5.42,
+    1.4
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "EPL",
+   "match": "Newcastle - Aston Villa",
+   "score": "0-1",
+   "probs": [
+    0.41,
+    0.259,
+    0.33
+   ],
+   "pick": "H",
+   "result": "A",
+   "hit": false,
+   "odds_avg": [
+    2.22,
+    3.63,
+    2.93
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "EPL",
+   "match": "Man City - Ipswich",
+   "score": "3-2",
+   "probs": [
+    0.758,
+    0.15,
+    0.092
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.24,
+    6.47,
+    10.08
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "EPL",
+   "match": "Fulham - Hull",
+   "score": "1-0",
+   "probs": [
+    0.52,
+    0.255,
+    0.225
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.7,
+    3.89,
+    4.51
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "EPL",
+   "match": "Everton - Chelsea",
+   "score": "0-2",
+   "probs": [
+    0.351,
+    0.268,
+    0.381
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    3.13,
+    3.62,
+    2.12
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "EPL",
+   "match": "Brentford - Liverpool",
+   "score": "1-2",
+   "probs": [
+    0.374,
+    0.27,
+    0.356
+   ],
+   "pick": "H",
+   "result": "A",
+   "hit": false,
+   "odds_avg": [
+    2.34,
+    3.62,
+    2.76
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "BUNDESLIGA",
+   "match": "Werder Bremen - Paderborn",
+   "score": "2-2",
+   "probs": [
+    0.531,
+    0.241,
+    0.228
+   ],
+   "pick": "H",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    1.77,
+    4.0,
+    3.97
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "BUNDESLIGA",
+   "match": "Union Berlin - Dortmund",
+   "score": "0-0",
+   "probs": [
+    0.183,
+    0.221,
+    0.596
+   ],
+   "pick": "A",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    5.0,
+    4.39,
+    1.56
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "BUNDESLIGA",
+   "match": "Schalke 04 - Mainz",
+   "score": "0-1",
+   "probs": [
+    0.32,
+    0.261,
+    0.419
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    2.94,
+    3.62,
+    2.21
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "BUNDESLIGA",
+   "match": "Hamburg - Stuttgart",
+   "score": "1-0",
+   "probs": [
+    0.244,
+    0.23,
+    0.526
+   ],
+   "pick": "A",
+   "result": "H",
+   "hit": false,
+   "odds_avg": [
+    3.81,
+    4.02,
+    1.79
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "BUNDESLIGA",
+   "match": "Elversberg - Augsburg",
+   "score": "4-3",
+   "probs": [
+    0.382,
+    0.251,
+    0.367
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    2.43,
+    3.77,
+    2.54
+   ]
+  },
+  {
+   "date": "2026-10-17",
+   "league": "BUNDESLIGA",
+   "match": "Bayern Munich - RB Leipzig",
+   "score": "6-1",
+   "probs": [
+    0.742,
+    0.145,
+    0.113
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.21,
+    7.43,
+    9.32
+   ]
+  },
+  {
+   "date": "2026-10-16",
+   "league": "SERIEA",
+   "match": "Frosinone - Sassuolo",
+   "score": "4-2",
+   "probs": [
+    0.385,
+    0.256,
+    0.358
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    2.31,
+    3.78,
+    2.73
+   ]
+  },
+  {
+   "date": "2026-10-16",
+   "league": "LIGUE1",
+   "match": "Le Mans - Toulouse",
+   "score": "0-3",
+   "probs": [
+    0.313,
+    0.266,
+    0.421
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    2.9,
+    3.51,
+    2.31
+   ]
+  },
+  {
+   "date": "2026-10-16",
+   "league": "LALIGA",
+   "match": "La Coruna - Levante",
+   "score": "1-1",
+   "probs": [
+    0.457,
+    0.269,
+    0.273
+   ],
+   "pick": "H",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    2.06,
+    3.46,
+    3.51
+   ]
+  },
+  {
+   "date": "2026-10-16",
+   "league": "BUNDESLIGA",
+   "match": "Ein Frankfurt - FC Koln",
+   "score": "1-0",
+   "probs": [
+    0.523,
+    0.225,
+    0.252
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.85,
+    4.18,
+    3.53
+   ]
+  },
+  {
+   "date": "2026-10-12",
+   "league": "SERIEA",
+   "match": "Torino - Udinese",
+   "score": "2-1",
+   "probs": [
+    0.393,
+    0.291,
+    0.317
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    2.31,
+    3.19,
+    3.12
+   ]
+  },
+  {
+   "date": "2026-10-12",
+   "league": "SERIEA",
+   "match": "Atalanta - Venezia",
+   "score": "3-1",
+   "probs": [
+    0.621,
+    0.215,
+    0.164
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.55,
+    4.18,
+    5.52
+   ]
+  },
+  {
+   "date": "2026-10-12",
+   "league": "LALIGA",
+   "match": "Levante - Sevilla",
+   "score": "3-3",
+   "probs": [
+    0.339,
+    0.288,
+    0.373
+   ],
+   "pick": "A",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    2.68,
+    3.27,
+    2.56
+   ]
+  },
+  {
+   "date": "2026-10-12",
+   "league": "EPL",
+   "match": "Coventry - Newcastle",
+   "score": "4-1",
+   "probs": [
+    0.291,
+    0.267,
+    0.442
+   ],
+   "pick": "A",
+   "result": "H",
+   "hit": false,
+   "odds_avg": [
+    3.25,
+    3.58,
+    2.08
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "league": "SERIEA",
+   "match": "Sassuolo - Milan",
+   "score": "1-1",
+   "probs": [
+    0.262,
+    0.256,
+    0.482
+   ],
+   "pick": "A",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    4.04,
+    3.71,
+    1.81
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "league": "SERIEA",
+   "match": "Lecce - Bologna",
+   "score": "1-2",
+   "probs": [
+    0.25,
+    0.293,
+    0.457
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    4.1,
+    3.34,
+    1.91
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "league": "SERIEA",
+   "match": "Lazio - Monza",
+   "score": "3-1",
+   "probs": [
+    0.573,
+    0.239,
+    0.188
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.57,
+    3.98,
+    5.66
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "league": "SERIEA",
+   "match": "Como - Roma",
+   "score": "0-0",
+   "probs": [
+    0.378,
+    0.266,
+    0.356
+   ],
+   "pick": "H",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    2.54,
+    3.54,
+    2.56
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "league": "SERIEA",
+   "match": "Cagliari - Juventus",
+   "score": "1-1",
+   "probs": [
+    0.173,
+    0.253,
+    0.574
+   ],
+   "pick": "A",
+   "result": "D",
+   "hit": false,
+   "odds_avg": [
+    6.13,
+    3.89,
+    1.55
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "league": "LIGUE1",
+   "match": "Troyes - Marseille",
+   "score": "0-2",
+   "probs": [
+    0.257,
+    0.253,
+    0.49
+   ],
+   "pick": "A",
+   "result": "A",
+   "hit": true,
+   "odds_avg": [
+    3.66,
+    3.81,
+    1.88
+   ]
+  },
+  {
+   "date": "2026-10-11",
+   "league": "LIGUE1",
+   "match": "Rennes - Auxerre",
+   "score": "4-1",
+   "probs": [
+    0.627,
+    0.207,
+    0.166
+   ],
+   "pick": "H",
+   "result": "H",
+   "hit": true,
+   "odds_avg": [
+    1.42,
+    4.83,
+    6.43
+   ]
+  }
+ ]
+}

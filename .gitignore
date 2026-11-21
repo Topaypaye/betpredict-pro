@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data_cache/
+python-installer.exe
+tunnel.log
+data/mobile_url.txt
+.env
