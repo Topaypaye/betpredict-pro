@@ -56,13 +56,27 @@ def _load_file(path) -> pd.DataFrame:
 
 
 def load_all() -> pd.DataFrame:
+    cache_csv = TENNIS_DIR / "tennis_all.csv.gz"
     files = sorted(list(TENNIS_DIR.rglob("*.xlsx")) + list(TENNIS_DIR.rglob("*.xls")))
+    if cache_csv.exists():
+        newest_xlsx = max((p.stat().st_mtime for p in files), default=0.0)
+        if cache_csv.stat().st_mtime >= newest_xlsx:
+            try:
+                df = pd.read_csv(cache_csv, parse_dates=["date"])
+                return df
+            except Exception:
+                pass
     frames = [f for f in (_load_file(p) for p in files) if not f.empty]
     if not frames:
         return pd.DataFrame()
     df = pd.concat(frames, ignore_index=True)
     df = df.drop_duplicates(subset=["tour", "date", "winner", "loser"])
-    return df.sort_values(["date", "tour"]).reset_index(drop=True)
+    df = df.sort_values(["date", "tour"]).reset_index(drop=True)
+    try:
+        df.to_csv(cache_csv, index=False, compression="gzip")
+    except Exception:
+        pass
+    return df
 
 
 def files_status() -> list[dict]:

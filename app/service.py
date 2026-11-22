@@ -3,6 +3,7 @@ produces explainable predictions and recommendations, keeps a live track record.
 from __future__ import annotations
 
 import difflib
+import gc
 import json
 import threading
 import time
@@ -187,8 +188,11 @@ class FootballService:
                     prematch[(row.league, row.home, row.away)] = pred
 
                 eng.run(df, callback=_cb, callback_season=C.CURRENT_SEASON)
+                cur_df = df[df.season == C.CURRENT_SEASON].copy()
+                del df
+                gc.collect()
                 self.engine, self.meta, self.history, self.prematch_preds, self.built_at = (
-                    eng, meta, df, prematch, time.time()
+                    eng, meta, cur_df, prematch, time.time()
                 )
         return self.engine
 
@@ -592,16 +596,22 @@ class TennisService:
                         })
 
                     eng.run(df, callback=_tn_cb, callback_min_date="2026-08-01")
-                    # Pre-index closing odds for instant lookup
+                    # Pre-index closing odds for recent matches only to keep memory footprint tiny
                     c_odds = {}
-                    for r in df.itertuples():
+                    recent_df = df[df["year"] >= 2026] if "year" in df.columns else df
+                    for r in recent_df.itertuples():
                         if not pd.isna(r.avgw) and not pd.isna(r.avgl):
                             c_odds[(r.winner, r.loser)] = {
                                 "avg": [round(float(r.avgw), 2), round(float(r.avgl), 2)],
                                 "max": [round(float(getattr(r, "maxw", r.avgw) or r.avgw), 2), round(float(getattr(r, "maxl", r.avgl) or r.avgl), 2)],
                             }
                     self._closing_odds_cache = c_odds
-                self.engine, self.df, self.recent_hist_preds, self.built_at = eng, df, hist_preds, time.time()
+                    slim_df = df.drop_duplicates("tournament", keep="last")[["tournament", "location", "surface"]].copy()
+                else:
+                    slim_df = df
+                del df
+                gc.collect()
+                self.engine, self.df, self.recent_hist_preds, self.built_at = eng, slim_df, hist_preds, time.time()
         return self.engine
 
     def _surface(self, tournament: str) -> str:
@@ -1717,22 +1727,27 @@ def daily_safe_picks(force_refresh: bool = False) -> dict:
 
 
 def warmup_all() -> dict:
-    """Warm up all engines, leagues, and the daily Top 3 calendar in the background."""
+    """Warm up engines sequentially with garbage collection so cloud containers stay under 512MB RAM."""
     global _warmup_running
     if _warmup_running:
         return {"status": "already_warming"}
     _warmup_running = True
     try:
         football.ensure()
-        for lg in C.LEAGUES:
+        gc.collect()
+        tennis.ensure()
+        gc.collect()
+        for lg in ("EPL", "LALIGA", "SERIEA", "BUNDESLIGA", "LIGUE1", "UCL"):
             try:
                 football.fixtures(lg, with_finished=True)
             except Exception:
                 pass
+        gc.collect()
         try:
             nba.all_season_games()
         except Exception:
             pass
+        gc.collect()
         try:
             tennis.matches()
         except Exception:
@@ -1741,6 +1756,7 @@ def warmup_all() -> dict:
             daily_safe_picks()
         except Exception:
             pass
+        gc.collect()
         return {"status": "ready"}
     finally:
         _warmup_running = False
