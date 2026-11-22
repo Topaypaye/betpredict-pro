@@ -354,19 +354,84 @@ class FootballService:
                 std_by_team[t_disp.lower()] = srow
                 std_names.append(t_disp)
 
-        def _find_fb_standing(tname: str | None) -> dict | None:
+        def _match_std_team(tname: str | None) -> str | None:
             if not tname:
                 return None
-            hit = std_by_team.get(tname) or std_by_team.get(tname.lower())
-            if hit:
-                return hit
+            if tname in std_by_team:
+                return std_by_team[tname]["team"]
+            if tname.lower() in std_by_team:
+                return std_by_team[tname.lower()]["team"]
             m_name = match_team(tname, std_names)
-            return std_by_team.get(m_name) if m_name else None
+            return std_by_team[m_name]["team"] if m_name and m_name in std_by_team else None
+
+        # Reconstruct point-in-time league standings entering each Matchweek by unwinding completed matches
+        has_multi_groups = sum(1 for r in std_rows if r.get("rank") == 1) > 1
+        mw_standings: dict[str, dict[str, dict]] = {}
+        if std_rows and not has_multi_groups:
+            mw_min_kick: dict[str, str] = {}
+            for ev_item in kept_evs:
+                mw_lbl = ev_item.get("matchweek") or ""
+                k_iso = ev_item.get("kickoff") or ""
+                if mw_lbl and (mw_lbl not in mw_min_kick or k_iso < mw_min_kick[mw_lbl]):
+                    mw_min_kick[mw_lbl] = k_iso
+
+            for mw_lbl, cutoff_iso in mw_min_kick.items():
+                snap = {
+                    r["team"]: {
+                        "team": r["team"],
+                        "points": int(r.get("points") or 0),
+                        "gd": int(r.get("gd") or 0),
+                        "played": int(r.get("played") or 0),
+                        "orig_rank": int(r.get("rank") or 99),
+                    }
+                    for r in std_rows if r.get("team")
+                }
+                for ev_other in raw_evs:
+                    if ev_other.get("state") != "post" or (ev_other.get("kickoff") or "") < cutoff_iso:
+                        continue
+                    try:
+                        hs = int(ev_other["home_score"])
+                        as_ = int(ev_other["away_score"])
+                    except (TypeError, ValueError, KeyError):
+                        continue
+                    ht = _match_std_team(ev_other.get("home"))
+                    at = _match_std_team(ev_other.get("away"))
+                    h_pts = 3 if hs > as_ else (1 if hs == as_ else 0)
+                    a_pts = 3 if as_ > hs else (1 if hs == as_ else 0)
+                    if ht and ht in snap:
+                        snap[ht]["points"] = max(0, snap[ht]["points"] - h_pts)
+                        snap[ht]["gd"] -= (hs - as_)
+                        snap[ht]["played"] = max(0, snap[ht]["played"] - 1)
+                    if at and at in snap:
+                        snap[at]["points"] = max(0, snap[at]["points"] - a_pts)
+                        snap[at]["gd"] -= (as_ - hs)
+                        snap[at]["played"] = max(0, snap[at]["played"] - 1)
+
+                ranked_snap = sorted(
+                    snap.values(),
+                    key=lambda x: (-x["points"], -x["gd"], x["orig_rank"]),
+                )
+                mw_map: dict[str, dict] = {}
+                for r_idx, r_obj in enumerate(ranked_snap, 1):
+                    entry = {**r_obj, "rank": r_idx}
+                    mw_map[r_obj["team"]] = entry
+                    mw_map[r_obj["team"].lower()] = entry
+                mw_standings[mw_lbl] = mw_map
+
+        def _find_fb_standing(tname: str | None, mw_lbl: str | None = None) -> dict | None:
+            canon_t = _match_std_team(tname)
+            if not canon_t:
+                return None
+            if mw_lbl and mw_lbl in mw_standings:
+                return mw_standings[mw_lbl].get(canon_t) or std_by_team.get(canon_t)
+            return std_by_team.get(canon_t)
 
         out = []
         for ev, home, away in matched_pairs:
-            h_std = _find_fb_standing(ev.get("home")) or _find_fb_standing(home)
-            a_std = _find_fb_standing(ev.get("away")) or _find_fb_standing(away)
+            mw_lbl = ev.get("matchweek")
+            h_std = _find_fb_standing(ev.get("home"), mw_lbl) or _find_fb_standing(home, mw_lbl)
+            a_std = _find_fb_standing(ev.get("away"), mw_lbl) or _find_fb_standing(away, mw_lbl)
+            mw_suffix = f" entering {mw_lbl}" if (ev.get("state") == "post" and mw_lbl) else ""
             item = {
                 **ev,
                 "league": league,
@@ -376,11 +441,11 @@ class FootballService:
                 "home_rank": h_std["rank"] if h_std and h_std.get("rank") else None,
                 "away_rank": a_std["rank"] if a_std and a_std.get("rank") else None,
                 "home_standing_info": (
-                    f"#{h_std['rank']} in {lg['name']} ({h_std['points']} pts, {h_std['gd']:+d} Goal Dif)"
+                    f"#{h_std['rank']} in {lg['name']}{mw_suffix} ({h_std['points']} pts, {h_std['gd']:+d} Goal Dif)"
                     if h_std and h_std.get("rank") else None
                 ),
                 "away_standing_info": (
-                    f"#{a_std['rank']} in {lg['name']} ({a_std['points']} pts, {a_std['gd']:+d} Goal Dif)"
+                    f"#{a_std['rank']} in {lg['name']}{mw_suffix} ({a_std['points']} pts, {a_std['gd']:+d} Goal Dif)"
                     if a_std and a_std.get("rank") else None
                 ),
             }
@@ -807,8 +872,14 @@ class TennisService:
                 ps, _ = tn_blend({k: v for k, v in comps.items() if k != "market"}, sw)
                 pm = comps.get("market", {}).get("p")
                 feat_ranks = pred["features"].get("rank", [300, 300])
-                a_rank_disp = ra_live or (feat_ranks[0] if feat_ranks[0] and feat_ranks[0] < 300 else None)
-                b_rank_disp = rb_live or (feat_ranks[1] if feat_ranks[1] and feat_ranks[1] < 300 else None)
+                hist_ra = feat_ranks[0] if feat_ranks[0] and feat_ranks[0] < 300 else None
+                hist_rb = feat_ranks[1] if feat_ranks[1] and feat_ranks[1] < 300 else None
+                if m.get("state") == "post":
+                    a_rank_disp = hist_ra or ra_live
+                    b_rank_disp = hist_rb or rb_live
+                else:
+                    a_rank_disp = ra_live or hist_ra
+                    b_rank_disp = rb_live or hist_rb
                 item.update({
                     "a_rank": a_rank_disp,
                     "b_rank": b_rank_disp,
@@ -940,8 +1011,9 @@ class NBAService:
         now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
         eng_cache: dict = {}
 
-        # Compute All-NBA overall league standing (1..30) + conference seed
+        # Compute current All-NBA overall league standing (1..30) + conference seed
         nba_std_rows = espn.nba_standings() or []
+        team_conf_map: dict[str, str] = {}
         sorted_nba = sorted(
             nba_std_rows,
             key=lambda r: (
@@ -953,6 +1025,7 @@ class NBAService:
         nba_rank_by_team: dict[str, dict] = {}
         for idx, r in enumerate(sorted_nba, 1):
             conf_short = "East" if "East" in (r.get("conference") or "") else "West"
+            team_conf_map[r["team"]] = conf_short
             entry = {
                 "rank": idx,
                 "conf_seed": r.get("seed"),
@@ -961,6 +1034,36 @@ class NBAService:
             }
             nba_rank_by_team[r["team"]] = entry
             nba_rank_by_team[r["team"].lower()] = entry
+
+        pit_nba_ranks_cache: dict[str, dict[str, dict]] = {}
+
+        def _nba_standings_at(eng_pit: NBAEngine, day_key: str) -> dict[str, dict]:
+            if day_key in pit_nba_ranks_cache:
+                return pit_nba_ranks_cache[day_key]
+            all_t = list(eng_pit.teams.values())
+            all_t.sort(
+                key=lambda t: (
+                    -(t.wins / max(1, t.wins + t.losses)),
+                    -t.wins,
+                    -(t.ppg_for - t.ppg_against),
+                    -t.elo,
+                )
+            )
+            conf_counts = {"East": 0, "West": 0}
+            rmap: dict[str, dict] = {}
+            for idx_t, t in enumerate(all_t, 1):
+                c_sh = team_conf_map.get(t.name, "NBA")
+                conf_counts[c_sh] = conf_counts.get(c_sh, 0) + 1
+                ent = {
+                    "rank": idx_t,
+                    "conf_seed": conf_counts[c_sh],
+                    "conf": c_sh,
+                    "record": f"{t.wins}-{t.losses}",
+                }
+                rmap[t.name] = ent
+                rmap[t.name.lower()] = ent
+            pit_nba_ranks_cache[day_key] = rmap
+            return rmap
 
         out = []
 
@@ -988,18 +1091,25 @@ class NBAService:
 
             rh, ra = _rest(home), _rest(away)
 
-            h_nba_std = nba_rank_by_team.get(home) or nba_rank_by_team.get((home or "").lower())
-            a_nba_std = nba_rank_by_team.get(away) or nba_rank_by_team.get((away or "").lower())
+            if ev.get("state") == "post" and season_results:
+                pit_map = _nba_standings_at(eng, str(kick_day)[:10])
+                h_nba_std = pit_map.get(home) or pit_map.get((home or "").lower()) or nba_rank_by_team.get(home)
+                a_nba_std = pit_map.get(away) or pit_map.get((away or "").lower()) or nba_rank_by_team.get(away)
+                pit_tag = f" on {str(kick_day)[:10]}"
+            else:
+                h_nba_std = nba_rank_by_team.get(home) or nba_rank_by_team.get((home or "").lower())
+                a_nba_std = nba_rank_by_team.get(away) or nba_rank_by_team.get((away or "").lower())
+                pit_tag = ""
             item = {
                 **ev,
                 "home_rank": h_nba_std["rank"] if h_nba_std else None,
                 "away_rank": a_nba_std["rank"] if a_nba_std else None,
                 "home_standing_info": (
-                    f"#{h_nba_std['rank']} NBA (#{h_nba_std['conf_seed']} {h_nba_std['conf']} · {h_nba_std['record']})"
+                    f"#{h_nba_std['rank']} NBA{pit_tag} (#{h_nba_std['conf_seed']} {h_nba_std['conf']} · {h_nba_std['record']})"
                     if h_nba_std else None
                 ),
                 "away_standing_info": (
-                    f"#{a_nba_std['rank']} NBA (#{a_nba_std['conf_seed']} {a_nba_std['conf']} · {a_nba_std['record']})"
+                    f"#{a_nba_std['rank']} NBA{pit_tag} (#{a_nba_std['conf_seed']} {a_nba_std['conf']} · {a_nba_std['record']})"
                     if a_nba_std else None
                 ),
             }
