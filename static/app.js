@@ -958,7 +958,7 @@ function renderFootballCard(f) {
         <!-- Col 4: Bookmaker & Fair Odds + Value Bet -->
         <div class="strip-odds">
           <div class="odds-line">
-            <span class="odds-label" title="${f.odds_books && f.odds_books['Winamax.fr'] ? 'Winamax.fr (ANJ French Odds)' : 'Bookmaker Odds'}">${f.odds_books && f.odds_books['Winamax.fr'] ? '🇫🇷 Wina' : 'Book'}</span>
+            <span class="odds-label" title="${f.odds_books && (f.odds_books['Stake.com'] || f.odds_books['Winamax.fr']) ? 'Stake.com (International Low-Vig Odds)' : 'Bookmaker Odds'}">${f.odds_books && (f.odds_books['Stake.com'] || f.odds_books['Winamax.fr']) ? '🎰 Stake' : 'Book'}</span>
             <span class="odds-vals" style="color:var(--accent-blue)">${f.best_odds ? `${f.best_odds[0]} / ${f.best_odds[1]} / ${f.best_odds[2]}` : 'Awaiting'}</span>
           </div>
           <div class="odds-line">
@@ -1375,7 +1375,7 @@ function renderNbaCard(g) {
         <!-- Col 4: Bookmaker & Fair Odds + Value Bet -->
         <div class="strip-odds">
           <div class="odds-line">
-            <span class="odds-label" title="${g.odds_books && g.odds_books['Winamax.fr'] ? 'Winamax.fr (ANJ French Odds)' : 'Bookmaker Odds'}">${g.odds_books && g.odds_books['Winamax.fr'] ? '🇫🇷 Wina' : 'Book'}</span>
+            <span class="odds-label" title="${g.odds_books && (g.odds_books['Stake.com'] || g.odds_books['Winamax.fr']) ? 'Stake.com (International Low-Vig Odds)' : 'Bookmaker Odds'}">${g.odds_books && (g.odds_books['Stake.com'] || g.odds_books['Winamax.fr']) ? '🎰 Stake' : 'Book'}</span>
             <span class="odds-vals" style="color:var(--accent-blue)">${g.best_odds ? `${g.best_odds[0]} / ${g.best_odds[1]}` : 'Awaiting'}</span>
           </div>
           <div class="odds-line">
@@ -1736,7 +1736,7 @@ function renderTennisCard(m) {
         <!-- Col 4: Bookmaker & Fair Odds + Value Bet -->
         <div class="strip-odds">
           <div class="odds-line">
-            <span class="odds-label" title="${m.odds_books && m.odds_books['Winamax.fr'] ? 'Winamax.fr (ANJ French Odds)' : 'Bookmaker Odds'}">${m.odds_books && m.odds_books['Winamax.fr'] ? '🇫🇷 Wina' : 'Book'}</span>
+            <span class="odds-label" title="${m.odds_books && (m.odds_books['Stake.com'] || m.odds_books['Winamax.fr']) ? 'Stake.com (International Low-Vig Odds)' : 'Bookmaker Odds'}">${m.odds_books && (m.odds_books['Stake.com'] || m.odds_books['Winamax.fr']) ? '🎰 Stake' : 'Book'}</span>
             <span class="odds-vals" style="color:var(--accent-blue)">${m.best_odds ? `${m.best_odds[0]} / ${m.best_odds[1]}` : (m.market_odds ? `${m.market_odds[0]} / ${m.market_odds[1]}` : 'Awaiting')}</span>
           </div>
           <div class="odds-line">

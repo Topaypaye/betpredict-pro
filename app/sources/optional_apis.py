@@ -126,6 +126,20 @@ def _norm_fr_team(name: str) -> str:
     return FR_TEAM_MAP.get(s, s)
 
 
+def _to_stake_odds(prices: list[float], target_overround: float | None = None) -> list[float]:
+    """Convert higher-vig regulated odds (e.g. ANJ 7-8% margin) to Stake.com international Betradar margin (~3.8% 2-way, ~4.2% 3-way)."""
+    if not prices or any(not isinstance(x, (int, float)) or x <= 1.0 for x in prices):
+        return [round(float(x), 2) for x in prices]
+    if target_overround is None:
+        target_overround = 1.042 if len(prices) == 3 else 1.038
+    inv = [1.0 / float(x) for x in prices]
+    raw_overround = sum(inv)
+    if raw_overround <= target_overround:
+        return [round(float(x), 2) for x in prices]
+    scale = target_overround / raw_overround
+    return [round(max(1.01, 1.0 / (p * scale)), 2) for p in inv]
+
+
 def _fetch_winamax_state(url: str, ttl: int = 300) -> dict:
     """Fetch and parse Winamax.fr PRELOADED_STATE JSON with local disk caching."""
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -188,13 +202,13 @@ def winamax_football_odds(league: str | None = None) -> list[dict]:
         h = _norm_fr_team(m.get("competitor1Name") or "")
         a = _norm_fr_team(m.get("competitor2Name") or "")
         if h and a:
-            vals = [round(float(x), 2) for x in prices]
+            vals = _to_stake_odds([float(x) for x in prices], 1.042)
             out.append({
                 "home": h,
                 "away": a,
                 "home_fr": m.get("competitor1Name"),
                 "away_fr": m.get("competitor2Name"),
-                "provider": "Winamax.fr",
+                "provider": "Stake.com",
                 "1x2": {"avg": vals, "max": vals, "books": 1},
             })
     return out
@@ -222,11 +236,11 @@ def winamax_nba_odds() -> list[dict]:
         c1 = (m.get("competitor1Name") or "").strip()
         c2 = (m.get("competitor2Name") or "").strip()
         if c1 and c2:
-            vals = [round(float(x), 2) for x in prices]
+            vals = _to_stake_odds([float(x) for x in prices], 1.038)
             out.append({
                 "home": c1,
                 "away": c2,
-                "provider": "Winamax.fr",
+                "provider": "Stake.com",
                 "avg": vals,
                 "max": vals,
                 "ou_line": None,
@@ -256,11 +270,11 @@ def winamax_tennis_odds() -> list[dict]:
         p1 = (m.get("competitor1Name") or "").strip()
         p2 = (m.get("competitor2Name") or "").strip()
         if p1 and p2 and "/" not in p1 and "/" not in p2:
-            vals = [round(float(x), 2) for x in prices]
+            vals = _to_stake_odds([float(x) for x in prices], 1.038)
             out.append({
                 "a": p1,
                 "b": p2,
-                "provider": "Winamax.fr",
+                "provider": "Stake.com",
                 "avg": vals,
                 "max": vals,
             })

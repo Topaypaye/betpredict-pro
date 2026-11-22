@@ -412,7 +412,10 @@ class FootballService:
                     "avg": tr.get("market_odds") or tr.get("best_odds"),
                     "max": tr.get("best_odds"),
                 }
-            if "Winamax.fr" in books:
+            if "Stake.com" in books:
+                market_odds = books["Stake.com"]["avg"]
+                best = books["Stake.com"]["max"]
+            elif "Winamax.fr" in books:
                 market_odds = books["Winamax.fr"]["avg"]
                 best = books["Winamax.fr"]["max"]
             else:
@@ -1041,7 +1044,10 @@ class NBAService:
                     ou_line = tr.get("ou_line")
                     spread_line = tr.get("spread_line")
 
-            if "Winamax.fr" in books:
+            if "Stake.com" in books:
+                market_odds = books["Stake.com"]["avg"]
+                best_odds = books["Stake.com"]["max"]
+            elif "Winamax.fr" in books:
                 market_odds = books["Winamax.fr"]["avg"]
                 best_odds = books["Winamax.fr"]["max"]
             else:
