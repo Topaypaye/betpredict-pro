@@ -8,9 +8,34 @@
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#10b981">
   <link rel="icon" type="image/svg+xml" href="/static/icon.svg">
-  <link rel="stylesheet" href="/static/style.css?v=13">
+  <link rel="stylesheet" href="/static/style.css?v=15">
 </head>
 <body>
+  <!-- Minimalist Login Overlay -->
+  <div id="loginOverlay" class="login-overlay" style="display:none;">
+    <form id="loginForm" class="login-card">
+      <div class="login-brand">
+        <svg viewBox="0 0 512 512" width="34" height="34">
+          <circle cx="256" cy="256" r="220" fill="none" stroke="#10b981" stroke-width="36"/>
+          <path d="M170 340 L230 250 L290 290 L350 170" fill="none" stroke="#10b981" stroke-width="36" stroke-linecap="round"/>
+          <circle cx="350" cy="170" r="24" fill="#38bdf8"/>
+        </svg>
+        <h2>BetPredict Pro</h2>
+      </div>
+      <p class="login-sub">Sign in to access predictions &amp; analytics</p>
+      <div id="loginError" class="login-error" style="display:none;"></div>
+      <div class="login-field">
+        <label for="loginUsername">Username</label>
+        <input type="text" id="loginUsername" autocomplete="username" placeholder="Enter username" required>
+      </div>
+      <div class="login-field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Enter password" required>
+      </div>
+      <button type="submit" id="btnLoginSubmit" class="login-submit-btn">Sign In</button>
+    </form>
+  </div>
+
   <header>
     <div class="brand">
       <svg viewBox="0 0 512 512">
@@ -22,6 +47,9 @@
       <span id="bgSyncBadge" class="sync-badge syncing" title="Pre-loading all sports tabs in the background for instant navigation">
         ⚡ Syncing tabs...
       </span>
+      <button type="button" id="btnLogout" class="user-auth-pill" style="display:none;" title="Switch account / Sign out">
+        <span id="lblAuthUser">👤</span> ⏻
+      </button>
     </div>
 
     <nav class="nav-tabs">
@@ -36,6 +64,9 @@
       </button>
       <button class="nav-tab" data-tab="calendar" id="tabCalendar">
         🗓️ Top 3 Safe
+      </button>
+      <button class="nav-tab" data-tab="bets" id="tabBets" style="display:none;">
+        💰 My Bets <span id="navBetsCount" class="badge badge-green" style="display:none; font-size:0.62rem; padding:0.08rem 0.36rem;">0</span>
       </button>
       <button class="nav-tab" data-tab="models" id="tabModels">
         ⚖️ Variables
@@ -781,6 +812,103 @@ Stake_Pct = min( 5.0%, 0.25 * f_star * 100 )
         </table>
       </div>
     </section>
+
+    <!-- My Bets & Financial Bankroll Tracker View -->
+    <section id="viewBets" style="display:none;">
+      <div class="section-title" style="flex-wrap:wrap; gap:0.75rem;">
+        <div>
+          <h2>💰 My Bets &amp; Bankroll Portfolio</h2>
+          <p style="color:var(--text-muted); font-size:0.78rem; margin-top:0.15rem;">
+            Click <strong>➕ Bet</strong> on any match in Football, NBA, Tennis, or Top 3 Safe to log a bet, or edit odds &amp; stakes directly in the table below.
+          </p>
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          <button class="pill-btn" id="btnCombineSelectedBets" style="border-color:rgba(168,85,247,0.55); color:#c084fc;" title="Check 2 or more bets in the table below (or click to combine your last 2 single bets) into 1 Multi-Bet">🔗 Combine into 1 Multi-Bet</button>
+          <button class="pill-btn active" id="btnAddCustomBet" style="background:var(--primary); color:#fff; border-color:var(--primary);">➕ Add Custom Bet</button>
+          <button class="pill-btn" id="btnRefreshBets">🔄 Check &amp; Settle Results</button>
+        </div>
+      </div>
+
+      <!-- Financial KPI Dashboard -->
+      <div class="weights-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-top:0.4rem; margin-bottom:1.1rem;">
+        <!-- Starting Capital Card (Editable) -->
+        <div class="weight-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h4 style="color:var(--text-muted); font-size:0.74rem;">STARTING CAPITAL</h4>
+            <select id="selBetsCurrency" style="background:#0f172a; color:var(--text-main); border:1px solid var(--border); border-radius:4px; font-size:0.72rem; padding:0.1rem 0.25rem;">
+              <option value="€">€ EUR</option>
+              <option value="$">$ USD</option>
+              <option value="£">£ GBP</option>
+            </select>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.4rem; margin-top:0.35rem;">
+            <input type="number" id="inpStartingCapital" step="10" min="0" value="1000" style="width:100%; background:#0b1120; border:1px solid var(--border); border-radius:6px; padding:0.38rem 0.55rem; color:var(--accent-blue); font-size:1.15rem; font-weight:800;">
+            <button class="pill-btn active" id="btnSaveCapital" style="padding:0.4rem 0.65rem;">Save</button>
+          </div>
+          <p style="font-size:0.72rem; color:var(--text-dim); margin-top:0.3rem;">Base bankroll reference</p>
+        </div>
+
+        <!-- Current Bankroll & Available Balance -->
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.74rem;">CURRENT BANKROLL (SETTLED)</h4>
+          <p id="betStatBankroll" style="font-size:1.65rem; font-weight:800; color:var(--text-main); margin-top:0.15rem;">€1,000.00</p>
+          <p id="betStatAvailable" style="font-size:0.73rem; color:var(--accent-blue);">Available cash: €1,000.00 (In play: €0.00)</p>
+        </div>
+
+        <!-- Net Profit & Bankroll Growth % -->
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.74rem;">NET PROFIT / LOSS</h4>
+          <p id="betStatProfit" style="font-size:1.65rem; font-weight:800; color:var(--primary); margin-top:0.15rem;">+€0.00 (+0.0%)</p>
+          <p id="betStatRoi" style="font-size:0.73rem; color:var(--text-dim);">Yield / ROI: 0.0% on €0.00 settled stake</p>
+        </div>
+
+        <!-- Win Rate & Record -->
+        <div class="weight-card">
+          <h4 style="color:var(--text-muted); font-size:0.74rem;">BETTING WIN RATE</h4>
+          <p id="betStatWinRate" style="font-size:1.65rem; font-weight:800; color:var(--accent-amber); margin-top:0.15rem;">0.0%</p>
+          <p id="betStatRecord" style="font-size:0.73rem; color:var(--text-dim);">0W – 0L • 0 Pending • Avg win odds: -</p>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="section-title" style="flex-wrap:wrap; gap:0.5rem; margin-bottom:0.65rem;">
+        <div class="conf-filter-bar" id="betsStatusFilter">
+          <button class="conf-pill active" data-bstatus="ALL">All Bets</button>
+          <button class="conf-pill" data-bstatus="pending">⏳ Pending</button>
+          <button class="conf-pill" data-bstatus="won">✓ Won</button>
+          <button class="conf-pill" data-bstatus="lost">✗ Lost</button>
+        </div>
+        <div class="conf-filter-bar" id="betsSportFilter">
+          <button class="conf-pill active" data-bsport="ALL">🌐 All Sports</button>
+          <button class="conf-pill" data-bsport="football">⚽ Football</button>
+          <button class="conf-pill" data-bsport="nba">🏀 NBA</button>
+          <button class="conf-pill" data-bsport="tennis">🎾 Tennis</button>
+        </div>
+      </div>
+
+      <!-- Recorded Bets Table (with Inline Editable Odds, Stake, Submitted Date, Status) -->
+      <div class="data-table-container">
+        <table class="data-table" id="tableUserBets">
+          <thead>
+            <tr>
+              <th style="width:32px; text-align:center;" title="Select bets to combine into 1 Multi-Bet">🔗</th>
+              <th>Submitted Date</th>
+              <th>Sport / Type</th>
+              <th>Matchup &amp; Score</th>
+              <th>Selected Pick(s)</th>
+              <th>Real Odds (Edit)</th>
+              <th>Stake (Edit)</th>
+              <th>Payout</th>
+              <th>Net PnL</th>
+              <th>Outcome / Action</th>
+            </tr>
+          </thead>
+          <tbody id="userBetsRows">
+            <tr><td colspan="10" style="text-align:center; padding:2rem; color:var(--text-muted);">No bets recorded yet. Click <strong>➕ Bet</strong> on any match card to log your first bet!</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
   <!-- Manual Absences / Injury Modal -->
@@ -807,6 +935,112 @@ Stake_Pct = min( 5.0%, 0.25 * f_star * 100 )
     </div>
   </div>
 
-  <script src="/static/app.js?v=25"></script>
+  <!-- Place / Record Bet Modal -->
+  <div id="placeBetModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); z-index:110; align-items:center; justify-content:center; padding:0.75rem;">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:14px; max-width:460px; width:100%; padding:1.15rem; box-shadow:0 12px 32px rgba(0,0,0,0.5);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+        <h3 style="font-size:1.05rem; color:var(--primary);" id="betModalTitle">💰 Record Bet</h3>
+        <span id="betModalLeagueBadge" class="badge badge-blue">⚽ Match</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:0.7rem; margin-bottom:1rem;">
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-bottom:0.2rem;">Matchup</label>
+          <input type="text" id="betModalMatchInput" style="width:100%; padding:0.45rem 0.6rem; background:#0b1120; border:1px solid var(--border); border-radius:6px; color:#fff; font-weight:700; font-size:0.86rem;">
+        </div>
+
+        <!-- Quick Pick Options for the Match -->
+        <div id="betModalQuickPicksWrap">
+          <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-bottom:0.25rem;">Quick Outcome Selection</label>
+          <div id="betModalQuickPicks" style="display:flex; flex-wrap:wrap; gap:0.35rem;"></div>
+        </div>
+
+        <div>
+          <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-bottom:0.2rem;">Your Selected Bet / Pick</label>
+          <input type="text" id="betModalPickInput" placeholder="e.g. Arsenal (Home Win)" style="width:100%; padding:0.45rem 0.6rem; background:#0b1120; border:1px solid var(--border); border-radius:6px; color:var(--accent-blue); font-weight:700; font-size:0.86rem;">
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.6rem;">
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-bottom:0.2rem;">Real Bookmaker Odds</label>
+            <input type="number" id="betModalOddsInput" step="0.01" min="1.01" value="1.85" style="width:100%; padding:0.45rem 0.6rem; background:#0b1120; border:1px solid var(--accent-blue); border-radius:6px; color:#fff; font-weight:800; font-size:0.95rem;">
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-bottom:0.2rem;">Stake Amount (<span id="betModalCurrLbl">€</span>)</label>
+            <input type="number" id="betModalStakeInput" step="1" min="0.5" value="25" style="width:100%; padding:0.45rem 0.6rem; background:#0b1120; border:1px solid var(--primary); border-radius:6px; color:#fff; font-weight:800; font-size:0.95rem;">
+          </div>
+        </div>
+
+        <!-- Quick Stake % Buttons -->
+        <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
+          <span style="font-size:0.7rem; color:var(--text-dim);">Quick Stake:</span>
+          <button type="button" class="pill-btn bet-quick-stake" data-pct="0.01" style="padding:0.18rem 0.45rem; font-size:0.7rem;">1% Bankroll</button>
+          <button type="button" class="pill-btn bet-quick-stake" data-pct="0.02" style="padding:0.18rem 0.45rem; font-size:0.7rem;">2% Bankroll</button>
+          <button type="button" class="pill-btn bet-quick-stake" data-pct="0.05" style="padding:0.18rem 0.45rem; font-size:0.7rem;">5% Bankroll</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.6rem;">
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-bottom:0.2rem;">Date Submitted</label>
+            <input type="text" id="betModalDateInput" style="width:100%; padding:0.42rem 0.55rem; background:#0b1120; border:1px solid var(--border); border-radius:6px; color:var(--text-main); font-size:0.8rem;">
+          </div>
+          <div>
+            <label style="font-size:0.75rem; color:var(--text-muted); font-weight:600; display:block; margin-bottom:0.2rem;">Status</label>
+            <select id="betModalStatusInput" style="width:100%; padding:0.42rem 0.55rem; background:#0b1120; border:1px solid var(--border); border-radius:6px; color:var(--text-main); font-size:0.8rem;">
+              <option value="pending">⏳ Pending</option>
+              <option value="won">✓ Won</option>
+              <option value="lost">✗ Lost</option>
+              <option value="void">↺ Void / Push</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Live Payout Preview Box -->
+        <div style="background:#0b1120; border:1px solid var(--border-light); border-radius:8px; padding:0.55rem 0.75rem; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+          <span style="color:var(--text-muted);">Potential Payout: <strong id="betModalPayoutPreview" style="color:#fff;">€46.25</strong></span>
+          <span style="color:var(--text-muted);">Net Profit: <strong id="betModalProfitPreview" style="color:var(--primary);">+€21.25</strong></span>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:0.45rem; flex-wrap:wrap;">
+        <button class="pill-btn" id="btnCancelBetModal">Cancel</button>
+        <button class="pill-btn" id="btnAddToMultiSlip" style="border-color:rgba(168,85,247,0.55); color:#c084fc; font-weight:700;">🎫 + Add to Multi-Bet Slip</button>
+        <button class="pill-btn active" id="btnConfirmBetModal" style="background:var(--primary); color:#fff; border-color:var(--primary);">💾 Record Single Bet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Multi-Bet (Parlay) Slip Bar -->
+  <div id="multiBetSlipBar" style="display:none; position:fixed; bottom:0.75rem; right:0.75rem; left:0.75rem; max-width:680px; margin:0 auto; background:#131b2e; border:2px solid var(--accent-purple); border-radius:12px; padding:0.75rem 0.95rem; z-index:105; box-shadow:0 12px 32px rgba(0,0,0,0.65);">
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:0.45rem;">
+        <span class="badge" style="background:rgba(168,85,247,0.22); color:#c084fc; border:1px solid rgba(168,85,247,0.45);">🎫 MULTI-BET SLIP</span>
+        <strong id="multiSlipCountLbl" style="font-size:0.84rem; color:#fff;">2 Selections</strong>
+      </div>
+      <button type="button" class="pill-btn" id="btnClearMultiSlip" style="padding:0.16rem 0.5rem; font-size:0.7rem; color:var(--accent-rose);">✕ Clear Slip</button>
+    </div>
+
+    <div id="multiSlipLegsList" style="display:flex; flex-direction:column; gap:0.32rem; max-height:130px; overflow-y:auto; margin-bottom:0.6rem;"></div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap:0.5rem; align-items:end;">
+      <div>
+        <label style="font-size:0.68rem; color:var(--text-muted); display:block; margin-bottom:0.15rem;">Combined Odds (Edit)</label>
+        <input type="number" id="multiSlipOddsInput" step="0.01" min="1.01" value="2.10" style="width:100%; padding:0.32rem 0.5rem; background:#0b1120; border:1px solid var(--accent-blue); border-radius:6px; color:#fff; font-weight:800; font-size:0.84rem;">
+      </div>
+      <div>
+        <label style="font-size:0.68rem; color:var(--text-muted); display:block; margin-bottom:0.15rem;">Total Stake</label>
+        <input type="number" id="multiSlipStakeInput" step="0.5" min="0.5" value="10" style="width:100%; padding:0.32rem 0.5rem; background:#0b1120; border:1px solid var(--primary); border-radius:6px; color:#fff; font-weight:800; font-size:0.84rem;">
+      </div>
+      <div>
+        <label style="font-size:0.68rem; color:var(--text-muted); display:block; margin-bottom:0.15rem;">Submitted Date</label>
+        <input type="text" id="multiSlipDateInput" style="width:100%; padding:0.32rem 0.5rem; background:#0b1120; border:1px solid var(--border); border-radius:6px; color:var(--text-main); font-size:0.76rem;">
+      </div>
+      <button type="button" class="pill-btn active" id="btnSubmitMultiSlip" style="background:var(--primary); color:#fff; border-color:var(--primary); padding:0.4rem 0.7rem; font-weight:800;">
+        💾 Save Multi-Bet (<span id="multiSlipPayoutLbl">€21.00</span>)
+      </button>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=31"></script>
 </body>
 </html>

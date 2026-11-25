@@ -176,6 +176,7 @@ class FootballService:
         self.history: pd.DataFrame | None = None
         self.prematch_preds: dict[tuple[str, str, str], dict] = {}
         self._fixtures_cache: dict[str, tuple[float, list[dict]]] = {}
+        self._league_locks: dict[str, threading.RLock] = {}
 
     def ensure(self, max_age: int = 3 * 3600):
         with self._lock:
@@ -209,11 +210,15 @@ class FootballService:
         return lk
 
     def fixtures(self, league: str, with_finished: bool = True, force_refresh: bool = False) -> list[dict]:
-        with _lock:
+        lg_lock = self._league_locks.setdefault(league, threading.RLock())
+        with lg_lock:
             cached = self._fixtures_cache.get(league)
             if not force_refresh and cached and (time.time() - cached[0] < 600):
                 all_fix = cached[1]
                 return [x for x in all_fix if x.get("state") != "post"] if not with_finished else all_fix
+            return self._build_fixtures(league, with_finished)
+
+    def _build_fixtures(self, league: str, with_finished: bool = True) -> list[dict]:
 
         eng = self.ensure()
         lg = C.LEAGUES[league]
@@ -803,10 +808,12 @@ class TennisService:
         return "WTA 250"
 
     def matches(self, force_refresh: bool = False) -> list[dict]:
-        with _lock:
+        with self._lock:
             if not force_refresh and self._matches_cache and (time.time() - self._matches_cache_time < 600):
                 return self._matches_cache
+            return self._build_matches()
 
+    def _build_matches(self) -> list[dict]:
         eng = self.ensure()
         W = weights("tennis")
         oapi = optional_apis.live_tennis_odds()
@@ -981,10 +988,12 @@ class NBAService:
         return cache[as_of]
 
     def all_season_games(self, force_refresh: bool = False) -> list[dict]:
-        with _lock:
+        with self._lock:
             if not force_refresh and self._all_games_cache and (time.time() - self._all_games_cache_time < 600):
                 return self._all_games_cache
+            return self._build_all_season_games()
 
+    def _build_all_season_games(self) -> list[dict]:
         fallback_eng = self.ensure()
         W = weights("nba")
         settings = load_settings()
@@ -996,18 +1005,26 @@ class NBAService:
         events = espn.nba_fixtures(days_back=days_back, days_ahead=7)
         track = _track_load()
         changed = False
-        try:
-            season_results = espn.nba_season_results(s_start)
-            pace_by_id = {}
-            for ev in events:
+        # Build season_results directly from events (avoids duplicate ESPN scoreboard pass)
+        season_results = []
+        for ev in events:
+            if ev.get("state") == "post" and ev.get("season_type") in (2, None):
+                try:
+                    hs, as_ = int(ev["home_score"]), int(ev["away_score"])
+                except (TypeError, ValueError):
+                    continue
                 ep = ev.get("espn_pace") or {}
+                sr = {
+                    "espn_id": ev["espn_id"],
+                    "kickoff": ev["kickoff"],
+                    "home": ev["home"],
+                    "away": ev["away"],
+                    "home_score": hs,
+                    "away_score": as_,
+                }
                 if ep:
-                    pace_by_id[ev["espn_id"]] = round(sum(ep.values()) / len(ep), 1)
-            for sr in season_results:
-                if sr["espn_id"] in pace_by_id:
-                    sr["pace"] = pace_by_id[sr["espn_id"]]
-        except Exception:
-            season_results = []
+                    sr["pace"] = round(sum(ep.values()) / len(ep), 1)
+                season_results.append(sr)
         now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
         eng_cache: dict = {}
 
@@ -1075,9 +1092,13 @@ class NBAService:
             ts_kick = pd.Timestamp(ev["kickoff"])
             kick_day = (ts_kick.tz_convert(None) if ts_kick.tzinfo is not None else ts_kick).normalize()
 
-            # Point-in-time ratings: finished/live games use only results before tip-off
+            # Point-in-time ratings: group by NBA gameday (US Eastern date) for 8x faster engine build
             if season_results:
-                as_of = min(ev["kickoff"], now_iso)
+                if ev.get("state") != "post":
+                    as_of = now_iso
+                else:
+                    gd_us = (ts_kick - pd.Timedelta(hours=5)).strftime("%Y-%m-%d")
+                    as_of = f"{gd_us}T12:00Z"
                 eng, last_game = self._engine_as_of(season_results, as_of, eng_cache)
             else:
                 eng, last_game = fallback_eng, {}

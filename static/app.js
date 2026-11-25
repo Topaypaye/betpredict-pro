@@ -89,11 +89,8 @@ async function refreshAllTabsInBackground() {
   const total = tasks.length;
   updateSyncBadge(`⚡ Syncing tabs (0/${total})...`, 'syncing');
 
-  // Trigger server-side warmup thread concurrently
-  fetch('/api/warmup', { method: 'POST' }).catch(() => {});
-
-  // Run background fetches in controlled concurrency so UI remains ultra-responsive
-  const concurrency = 4;
+  // Controlled concurrency (2) avoids thrashing low-CPU cloud containers (e.g. Render Free)
+  const concurrency = 2;
   const queue = [...tasks];
   async function worker() {
     while (queue.length > 0) {
@@ -117,15 +114,120 @@ async function refreshAllTabsInBackground() {
   updateSyncBadge('✓ All Tabs Ready', 'ready');
 }
 
+// ------------------------------------------------------------- Auth & Boot
+let currentUser = null;
+let appBooted = false;
+
+function isAdmin() {
+  return currentUser && currentUser.role === 'admin';
+}
+
+function applyAuthUi() {
+  const tabBets = document.getElementById('tabBets');
+  if (tabBets) tabBets.style.display = isAdmin() ? 'flex' : 'none';
+
+  const btnLogout = document.getElementById('btnLogout');
+  const lblUser = document.getElementById('lblAuthUser');
+  if (btnLogout) {
+    btnLogout.style.display = currentUser?.authenticated ? 'inline-flex' : 'none';
+  }
+  if (lblUser && currentUser?.username) {
+    lblUser.innerText = `👤 ${currentUser.username}`;
+  }
+  if (!isAdmin() && currentTab === 'bets') {
+    switchTab('football');
+  }
+}
+
+async function bootAppAfterLogin() {
+  applyAuthUi();
+  if (!appBooted) {
+    appBooted = true;
+    await loadStatus();
+    if (isAdmin()) {
+      loadUserBets();
+    }
+    await loadFootballFixtures();
+    refreshAllTabsInBackground();
+  } else {
+    if (isAdmin()) {
+      await loadUserBets();
+    } else {
+      userBetsState = null;
+      const slipBar = document.getElementById('multiBetSlipBar');
+      if (slipBar) slipBar.style.display = 'none';
+    }
+    switchTab(currentTab === 'bets' && !isAdmin() ? 'football' : currentTab);
+  }
+}
+
+function setupAuthHandlers() {
+  const form = document.getElementById('loginForm');
+  const overlay = document.getElementById('loginOverlay');
+  const errBox = document.getElementById('loginError');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (errBox) errBox.style.display = 'none';
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          if (errBox) {
+            errBox.innerText = err.detail || 'Invalid username or password';
+            errBox.style.display = 'block';
+          }
+          return;
+        }
+        currentUser = await res.json();
+        if (overlay) overlay.style.display = 'none';
+        document.getElementById('loginPassword').value = '';
+        await bootAppAfterLogin();
+      } catch (err) {
+        if (errBox) {
+          errBox.innerText = 'Connection error. Please try again.';
+          errBox.style.display = 'block';
+        }
+      }
+    });
+  }
+
+  document.getElementById('btnLogout')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    currentUser = null;
+    applyAuthUi();
+    if (overlay) overlay.style.display = 'flex';
+    document.getElementById('loginUsername')?.focus();
+  });
+}
+
 // ------------------------------------------------------------- Init & Service Worker
 document.addEventListener('DOMContentLoaded', async () => {
   setupNavigation();
   setupSettingsHandlers();
-  await loadStatus();
-  await loadFootballFixtures();
+  setupBetsTrackerHandlers();
+  setupAuthHandlers();
 
-  // Immediately pre-load all other tabs & leagues in the background
-  refreshAllTabsInBackground();
+  try {
+    const res = await fetch('/api/auth/me');
+    const me = await res.json();
+    if (me && me.authenticated) {
+      currentUser = me;
+      await bootAppAfterLogin();
+    } else {
+      document.getElementById('loginOverlay').style.display = 'flex';
+      document.getElementById('loginUsername')?.focus();
+    }
+  } catch (err) {
+    document.getElementById('loginOverlay').style.display = 'flex';
+  }
 
   // Register PWA service worker
   if ('serviceWorker' in navigator) {
@@ -283,6 +385,9 @@ function setupNavigation() {
 }
 
 function switchTab(tab) {
+  if (tab === 'bets' && !isAdmin()) {
+    tab = 'football';
+  }
   currentTab = tab;
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   
@@ -292,6 +397,8 @@ function switchTab(tab) {
   document.getElementById('viewTennis').style.display = tab === 'tennis' ? 'block' : 'none';
   const viewCal = document.getElementById('viewCalendar');
   if (viewCal) viewCal.style.display = tab === 'calendar' ? 'block' : 'none';
+  const viewBets = document.getElementById('viewBets');
+  if (viewBets) viewBets.style.display = tab === 'bets' ? 'block' : 'none';
   document.getElementById('viewModels').style.display = tab === 'models' ? 'block' : 'none';
   document.getElementById('viewDocs').style.display = tab === 'docs' ? 'block' : 'none';
   document.getElementById('viewBacktest').style.display = tab === 'backtest' ? 'block' : 'none';
@@ -300,6 +407,7 @@ function switchTab(tab) {
   if (tab === 'nba') loadNbaGames();
   if (tab === 'tennis') loadTennisMatches();
   if (tab === 'calendar') loadDailyPicks();
+  if (tab === 'bets') loadUserBets(true);
   if (tab === 'models') renderModelSliders();
   if (tab === 'backtest') loadBacktestData();
 }
@@ -968,8 +1076,9 @@ function renderFootballCard(f) {
           ${valueBetsHtml}
         </div>
 
-        <!-- Col 5: Details Toggle -->
+        <!-- Col 5: Details Toggle & Bet Action -->
         <div class="strip-actions">
+          ${renderCardBetButton('football', f)}
           <button class="btn-toggle-vars" data-target="vars_${f.espn_id}">
             📊 Details ▼
           </button>
@@ -1072,6 +1181,16 @@ function attachCardEvents() {
   document.querySelectorAll('.btn-absence').forEach(btn => {
     btn.addEventListener('click', (e) => {
       openAbsenceModal(e.currentTarget.dataset.id, e.currentTarget.dataset.home, e.currentTarget.dataset.away);
+    });
+  });
+
+  document.querySelectorAll('.btn-place-bet').forEach(btn => {
+    if (btn.dataset.wired) return;
+    btn.dataset.wired = 'true';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const ckey = e.currentTarget.dataset.bkey;
+      openPlaceBetModal(ckey);
     });
   });
 }
@@ -1385,8 +1504,9 @@ function renderNbaCard(g) {
           ${valueBetsHtml}
         </div>
 
-        <!-- Col 5: Details Toggle -->
+        <!-- Col 5: Details Toggle & Bet Action -->
         <div class="strip-actions">
+          ${renderCardBetButton('nba', g)}
           <button class="btn-toggle-vars" data-target="vars_nba_${g.espn_id}">
             📊 Details ▼
           </button>
@@ -1746,8 +1866,9 @@ function renderTennisCard(m) {
           ${valueBetsHtml}
         </div>
 
-        <!-- Col 5: Details Toggle -->
+        <!-- Col 5: Details Toggle & Bet Action -->
         <div class="strip-actions">
+          ${renderCardBetButton('tennis', m)}
           <button class="btn-toggle-vars" data-target="vars_tn_${m.espn_id}">
             📊 Details ▼
           </button>
@@ -2253,7 +2374,10 @@ function renderCalendarSpotlight() {
             <div class="safe-pick-card ${cardStateClass}">
               <div class="safe-pick-top">
                 <span class="rank-pill rank-${idx + 1}">${rankLabels[idx] || `#${idx + 1} SAFE PICK`}</span>
-                <span class="badge badge-blue">${spIcon} ${p.league_name || p.league}</span>
+                <div style="display:flex; align-items:center; gap:0.35rem;">
+                  <span class="badge badge-blue">${spIcon} ${p.league_name || p.league}</span>
+                  ${renderTop3BetButton(p)}
+                </div>
               </div>
 
               <div class="safe-pick-match">
@@ -2313,6 +2437,7 @@ function renderCalendarSpotlight() {
       renderDailyCalendarView();
     });
   }
+  attachCardEvents();
 }
 
 function renderMonthlyGrid() {
@@ -2486,4 +2611,763 @@ function renderCalendarHistoryTable() {
       if (spot) spot.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
+}
+
+// ============================================================= User Bet Tracker & Bankroll Portfolio
+let userBetsState = null;
+let betCandidatesMap = {};
+let activeBetModalCandidate = null;
+let selectedModalPickCode = 'CUSTOM';
+let betsStatusFilter = 'ALL';
+let betsSportFilter = 'ALL';
+let multiBetSlipLegs = [];
+
+function _isMatchInUserBets(espnId, matchStr) {
+  if (!userBetsState || !userBetsState.bets) return false;
+  return userBetsState.bets.some(b => {
+    if ((espnId && b.espn_id && String(b.espn_id) === String(espnId)) || (matchStr && b.match === matchStr)) {
+      return true;
+    }
+    if (b.legs && b.legs.length > 0) {
+      return b.legs.some(l =>
+        (espnId && l.espn_id && String(l.espn_id) === String(espnId)) ||
+        (matchStr && l.match === matchStr)
+      );
+    }
+    return false;
+  });
+}
+
+function renderCardBetButton(sport, item) {
+  if (!isAdmin()) return '';
+  const eid = String(item.espn_id || '');
+  const bkey = `${sport}_${eid || (item.home || item.a) + '_' + (item.away || item.b)}`;
+  const reco = item.recommendation || {};
+  const bestOdds = item.best_odds || item.market_odds || reco.fair_odds || [];
+
+  let homeName = item.home || item.a || 'Home';
+  let awayName = item.away || item.b || 'Away';
+  let matchTitle = `${homeName} vs ${awayName}`;
+  let defaultPick = reco.pick || homeName;
+  let defaultCode = 'HOME';
+  let defaultOdds = 1.85;
+  const quickOptions = [];
+
+  if (sport === 'football') {
+    const oH = Number(bestOdds[0] || reco.fair_odds?.[0] || 1.85).toFixed(2);
+    const oD = Number(bestOdds[1] || reco.fair_odds?.[1] || 3.40).toFixed(2);
+    const oA = Number(bestOdds[2] || reco.fair_odds?.[2] || 4.00).toFixed(2);
+    const overP = item.over25 ?? 0.5;
+    const oOver = (1 / Math.max(0.15, Math.min(0.88, overP * 1.04))).toFixed(2);
+    const oUnder = (1 / Math.max(0.15, Math.min(0.88, (1 - overP) * 1.04))).toFixed(2);
+    quickOptions.push(
+      { label: `${homeName} (1)`, pick: `${homeName} (Win)`, code: 'HOME', odds: oH },
+      { label: `Draw (X)`, pick: `Draw (${matchTitle})`, code: 'DRAW', odds: oD },
+      { label: `${awayName} (2)`, pick: `${awayName} (Win)`, code: 'AWAY', odds: oA },
+      { label: `Over 2.5`, pick: `Over 2.5 Goals`, code: 'OVER_25', odds: oOver },
+      { label: `Under 2.5`, pick: `Under 2.5 Goals`, code: 'UNDER_25', odds: oUnder }
+    );
+    if (reco.pick_index === 1) {
+      defaultPick = `Draw (${matchTitle})`;
+      defaultCode = 'DRAW';
+      defaultOdds = oD;
+    } else if (reco.pick_index === 2) {
+      defaultPick = `${awayName} (Win)`;
+      defaultCode = 'AWAY';
+      defaultOdds = oA;
+    } else {
+      defaultPick = `${homeName} (Win)`;
+      defaultCode = 'HOME';
+      defaultOdds = oH;
+    }
+  } else if (sport === 'nba') {
+    const oH = Number(bestOdds[0] || reco.fair_odds?.[0] || 1.85).toFixed(2);
+    const oA = Number(bestOdds[1] || reco.fair_odds?.[1] || 1.95).toFixed(2);
+    const ouLine = item.ou_line || 226.5;
+    quickOptions.push(
+      { label: `${homeName} ML`, pick: `${homeName} (ML)`, code: 'HOME', odds: oH },
+      { label: `${awayName} ML`, pick: `${awayName} (ML)`, code: 'AWAY', odds: oA },
+      { label: `Over ${ouLine}`, pick: `Over ${ouLine} pts`, code: 'CUSTOM', odds: '1.91' },
+      { label: `Under ${ouLine}`, pick: `Under ${ouLine} pts`, code: 'CUSTOM', odds: '1.91' }
+    );
+    if (reco.pick_index === 1) {
+      defaultPick = `${awayName} (ML)`;
+      defaultCode = 'AWAY';
+      defaultOdds = oA;
+    } else {
+      defaultPick = `${homeName} (ML)`;
+      defaultCode = 'HOME';
+      defaultOdds = oH;
+    }
+  } else {
+    const oA = Number(bestOdds[0] || reco.fair_odds?.[0] || 1.75).toFixed(2);
+    const oB = Number(bestOdds[1] || reco.fair_odds?.[1] || 2.05).toFixed(2);
+    quickOptions.push(
+      { label: `${homeName}`, pick: `${homeName} (Win)`, code: 'A', odds: oA },
+      { label: `${awayName}`, pick: `${awayName} (Win)`, code: 'B', odds: oB }
+    );
+    if (reco.pick_index === 1) {
+      defaultPick = `${awayName} (Win)`;
+      defaultCode = 'B';
+      defaultOdds = oB;
+    } else {
+      defaultPick = `${homeName} (Win)`;
+      defaultCode = 'A';
+      defaultOdds = oA;
+    }
+  }
+
+  betCandidatesMap[bkey] = {
+    espn_id: eid,
+    sport,
+    league: item.league || item.tour || sport.toUpperCase(),
+    league_name: item.league_name || item.tournament || item.league || sport.toUpperCase(),
+    match: matchTitle,
+    home: homeName,
+    away: awayName,
+    kickoff: item.kickoff || item.start || '',
+    defaultPick,
+    defaultCode,
+    defaultOdds,
+    quickOptions,
+  };
+
+  const inBets = _isMatchInUserBets(eid, matchTitle);
+  return `
+    <button type="button" class="btn-place-bet ${inBets ? 'in-bets' : ''}" data-bkey="${bkey}" title="Record a bet on this match">
+      ${inBets ? '✓ Bet Logged' : '➕ Bet'}
+    </button>
+  `;
+}
+
+function renderTop3BetButton(p) {
+  if (!isAdmin()) return '';
+  const bkey = `top3_${p.id}`;
+  const isHome = p.pick && p.home && p.pick.includes(p.home);
+  betCandidatesMap[bkey] = {
+    espn_id: String(p.id || '').replace(/^(fb|nba|tn)_/, ''),
+    sport: p.sport || 'football',
+    league: p.league || 'Match',
+    league_name: p.league_name || p.league || 'Match',
+    match: p.match,
+    home: p.home || '',
+    away: p.away || '',
+    kickoff: p.kickoff || p.date || '',
+    defaultPick: p.pick,
+    defaultCode: isHome ? 'HOME' : 'AWAY',
+    defaultOdds: Number(p.odds || 1.5).toFixed(2),
+    quickOptions: [
+      { label: p.pick, pick: p.pick, code: isHome ? 'HOME' : 'AWAY', odds: Number(p.odds || 1.5).toFixed(2) }
+    ],
+  };
+  const inBets = _isMatchInUserBets(betCandidatesMap[bkey].espn_id, p.match);
+  return `
+    <button type="button" class="btn-place-bet ${inBets ? 'in-bets' : ''}" data-bkey="${bkey}" style="padding:0.18rem 0.45rem; font-size:0.68rem;">
+      ${inBets ? '✓ Logged' : '➕ Bet'}
+    </button>
+  `;
+}
+
+function _nowDateTimeInputStr() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function _updateBetModalPreview() {
+  const curr = userBetsState?.currency || '€';
+  const odds = parseFloat(document.getElementById('betModalOddsInput')?.value || 1) || 1;
+  const stake = parseFloat(document.getElementById('betModalStakeInput')?.value || 0) || 0;
+  const payout = (stake * odds).toFixed(2);
+  const profit = (stake * (odds - 1)).toFixed(2);
+  const payEl = document.getElementById('betModalPayoutPreview');
+  const profEl = document.getElementById('betModalProfitPreview');
+  if (payEl) payEl.innerText = `${curr}${payout}`;
+  if (profEl) profEl.innerText = `+${curr}${profit}`;
+}
+
+function openPlaceBetModal(bkey = null) {
+  const cand = bkey ? betCandidatesMap[bkey] : null;
+  activeBetModalCandidate = cand;
+  const curr = userBetsState?.currency || '€';
+  document.getElementById('betModalCurrLbl').innerText = curr;
+  document.getElementById('betModalDateInput').value = _nowDateTimeInputStr();
+  document.getElementById('betModalStatusInput').value = 'pending';
+
+  const matchInp = document.getElementById('betModalMatchInput');
+  const pickInp = document.getElementById('betModalPickInput');
+  const oddsInp = document.getElementById('betModalOddsInput');
+  const qWrap = document.getElementById('betModalQuickPicksWrap');
+  const qBox = document.getElementById('betModalQuickPicks');
+  const badge = document.getElementById('betModalLeagueBadge');
+
+  if (cand) {
+    const spIcon = SPORT_ICONS[cand.sport] || '🏆';
+    badge.innerText = `${spIcon} ${cand.league_name}`;
+    matchInp.value = cand.match;
+    pickInp.value = cand.defaultPick;
+    oddsInp.value = cand.defaultOdds;
+    selectedModalPickCode = cand.defaultCode || 'CUSTOM';
+
+    if (cand.quickOptions && cand.quickOptions.length > 0) {
+      qWrap.style.display = 'block';
+      qBox.innerHTML = cand.quickOptions.map((opt, idx) => `
+        <button type="button" class="pill-btn modal-qpick-btn ${opt.pick === cand.defaultPick ? 'active' : ''}" data-idx="${idx}" style="font-size:0.72rem; padding:0.22rem 0.5rem;">
+          ${opt.label} <strong style="color:var(--accent-blue)">@${opt.odds}</strong>
+        </button>
+      `).join('');
+      qBox.querySelectorAll('.modal-qpick-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          qBox.querySelectorAll('.modal-qpick-btn').forEach(b => b.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+          const opt = cand.quickOptions[Number(e.currentTarget.dataset.idx)];
+          if (opt) {
+            pickInp.value = opt.pick;
+            oddsInp.value = opt.odds;
+            selectedModalPickCode = opt.code || 'CUSTOM';
+            _updateBetModalPreview();
+          }
+        });
+      });
+    } else {
+      qWrap.style.display = 'none';
+    }
+  } else {
+    badge.innerText = '✍️ Custom Bet';
+    matchInp.value = '';
+    matchInp.placeholder = 'e.g. Real Madrid vs Barcelona';
+    pickInp.value = '';
+    oddsInp.value = '1.90';
+    selectedModalPickCode = 'CUSTOM';
+    qWrap.style.display = 'none';
+  }
+
+  _updateBetModalPreview();
+  document.getElementById('placeBetModal').style.display = 'flex';
+}
+
+function setupBetsTrackerHandlers() {
+  const modal = document.getElementById('placeBetModal');
+  const btnCancel = document.getElementById('btnCancelBetModal');
+  if (btnCancel) {
+    btnCancel.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+  }
+
+  document.getElementById('betModalOddsInput')?.addEventListener('input', _updateBetModalPreview);
+  document.getElementById('betModalStakeInput')?.addEventListener('input', _updateBetModalPreview);
+
+  document.querySelectorAll('.bet-quick-stake').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const pct = parseFloat(e.currentTarget.dataset.pct || 0.02);
+      const bank = userBetsState?.current_bankroll || userBetsState?.starting_capital || 1000;
+      const amt = Math.max(1, Math.round(bank * pct));
+      document.getElementById('betModalStakeInput').value = amt;
+      _updateBetModalPreview();
+    });
+  });
+
+  document.getElementById('btnConfirmBetModal')?.addEventListener('click', async () => {
+    const matchVal = document.getElementById('betModalMatchInput').value.trim() || 'Custom Match';
+    const pickVal = document.getElementById('betModalPickInput').value.trim() || 'Win';
+    const oddsVal = parseFloat(document.getElementById('betModalOddsInput').value) || 1.5;
+    const stakeVal = parseFloat(document.getElementById('betModalStakeInput').value) || 10;
+    const dateVal = document.getElementById('betModalDateInput').value.trim();
+    const statusVal = document.getElementById('betModalStatusInput').value;
+    const cand = activeBetModalCandidate;
+
+    const payload = {
+      espn_id: cand ? cand.espn_id : '',
+      sport: cand ? cand.sport : 'football',
+      league: cand ? cand.league : 'Custom',
+      league_name: cand ? cand.league_name : 'Custom',
+      match: matchVal,
+      home: cand ? cand.home : '',
+      away: cand ? cand.away : '',
+      kickoff: cand ? cand.kickoff : dateVal,
+      submitted_at: dateVal,
+      pick: pickVal,
+      pick_code: selectedModalPickCode || 'CUSTOM',
+      odds: oddsVal,
+      stake: stakeVal,
+      status: statusVal,
+    };
+
+    const res = await fetch('/api/bets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    userBetsState = await res.json();
+    modal.style.display = 'none';
+    renderUserBetsView();
+    // Update "+ Bet" buttons on current view to "✓ Bet Logged"
+    if (currentTab === 'football') loadFootballFixtures();
+    if (currentTab === 'nba') loadNbaGames();
+    if (currentTab === 'tennis') loadTennisMatches();
+    if (currentTab === 'calendar') renderDailyCalendarView();
+  });
+
+  // Add current modal selection to Multi-Bet Slip
+  document.getElementById('btnAddToMultiSlip')?.addEventListener('click', () => {
+    const matchVal = document.getElementById('betModalMatchInput').value.trim() || 'Custom Match';
+    const pickVal = document.getElementById('betModalPickInput').value.trim() || 'Win';
+    const oddsVal = parseFloat(document.getElementById('betModalOddsInput').value) || 1.5;
+    const stakeVal = parseFloat(document.getElementById('betModalStakeInput').value) || 10;
+    const dateVal = document.getElementById('betModalDateInput').value.trim();
+    const statusVal = document.getElementById('betModalStatusInput').value;
+    const cand = activeBetModalCandidate;
+
+    multiBetSlipLegs.push({
+      espn_id: cand ? cand.espn_id : '',
+      sport: cand ? cand.sport : 'football',
+      league: cand ? cand.league : 'Custom',
+      match: matchVal,
+      home: cand ? cand.home : '',
+      away: cand ? cand.away : '',
+      pick: pickVal,
+      pick_code: selectedModalPickCode || 'CUSTOM',
+      odds: Number(oddsVal.toFixed(2)),
+      status: statusVal,
+    });
+
+    const slipStake = document.getElementById('multiSlipStakeInput');
+    if (slipStake && stakeVal > 0) slipStake.value = stakeVal;
+    const slipDate = document.getElementById('multiSlipDateInput');
+    if (slipDate && dateVal) slipDate.value = dateVal;
+
+    modal.style.display = 'none';
+    renderMultiBetSlipBar(true);
+  });
+
+  document.getElementById('btnClearMultiSlip')?.addEventListener('click', () => {
+    multiBetSlipLegs = [];
+    renderMultiBetSlipBar();
+  });
+
+  document.getElementById('multiSlipOddsInput')?.addEventListener('input', () => _updateMultiSlipPayout());
+  document.getElementById('multiSlipStakeInput')?.addEventListener('input', () => _updateMultiSlipPayout());
+
+  document.getElementById('btnSubmitMultiSlip')?.addEventListener('click', async () => {
+    if (multiBetSlipLegs.length === 0) return;
+    const combOdds = parseFloat(document.getElementById('multiSlipOddsInput').value) || 1.5;
+    const stakeVal = parseFloat(document.getElementById('multiSlipStakeInput').value) || 10;
+    const dateVal = document.getElementById('multiSlipDateInput').value.trim() || _nowDateTimeInputStr();
+
+    const payload = {
+      is_multi: multiBetSlipLegs.length >= 2,
+      legs: multiBetSlipLegs,
+      sport: multiBetSlipLegs[0].sport || 'football',
+      league: multiBetSlipLegs.length >= 2 ? `🎫 ${multiBetSlipLegs.length}-Leg Multi` : multiBetSlipLegs[0].league,
+      match: multiBetSlipLegs.map(l => l.match).join(' + '),
+      pick: multiBetSlipLegs.map(l => `${l.pick} (@${l.odds.toFixed(2)})`).join(' • '),
+      pick_code: multiBetSlipLegs.length >= 2 ? 'MULTI' : multiBetSlipLegs[0].pick_code,
+      espn_id: multiBetSlipLegs.length === 1 ? multiBetSlipLegs[0].espn_id : '',
+      odds: combOdds,
+      stake: stakeVal,
+      submitted_at: dateVal,
+      status: 'pending',
+    };
+
+    const res = await fetch('/api/bets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    userBetsState = await res.json();
+    multiBetSlipLegs = [];
+    renderMultiBetSlipBar();
+    renderUserBetsView();
+    if (currentTab === 'football') loadFootballFixtures();
+    if (currentTab === 'nba') loadNbaGames();
+    if (currentTab === 'tennis') loadTennisMatches();
+    if (currentTab === 'calendar') renderDailyCalendarView();
+  });
+
+  // Combine checked existing rows (or last 2 single bets) into 1 Multi-Bet
+  document.getElementById('btnCombineSelectedBets')?.addEventListener('click', async () => {
+    const checked = Array.from(document.querySelectorAll('.chk-merge-bet:checked')).map(c => c.dataset.id);
+    let idsToCombine = checked;
+    if (idsToCombine.length < 2) {
+      const singles = (userBetsState?.bets || []).filter(b => !b.is_multi);
+      if (singles.length >= 2) {
+        idsToCombine = singles.slice(0, 2).map(b => b.id);
+      } else {
+        alert('Check at least 2 bets in the table (or log at least 2 single bets) to combine them into 1 Multi-Bet.');
+        return;
+      }
+    }
+    const res = await fetch('/api/bets/combine', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bet_ids: idsToCombine }),
+    });
+    userBetsState = await res.json();
+    renderUserBetsView();
+  });
+
+  document.getElementById('btnAddCustomBet')?.addEventListener('click', () => openPlaceBetModal(null));
+  document.getElementById('btnRefreshBets')?.addEventListener('click', () => loadUserBets(true));
+
+  document.getElementById('btnSaveCapital')?.addEventListener('click', async () => {
+    const cap = parseFloat(document.getElementById('inpStartingCapital').value) || 0;
+    const curr = document.getElementById('selBetsCurrency').value || '€';
+    const res = await fetch('/api/bets/capital', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ starting_capital: cap, currency: curr }),
+    });
+    userBetsState = await res.json();
+    renderUserBetsView();
+  });
+
+  document.getElementById('selBetsCurrency')?.addEventListener('change', () => {
+    document.getElementById('btnSaveCapital')?.click();
+  });
+
+  document.querySelectorAll('#betsStatusFilter .conf-pill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('#betsStatusFilter .conf-pill').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      betsStatusFilter = e.currentTarget.dataset.bstatus;
+      renderUserBetsView();
+    });
+  });
+
+  document.querySelectorAll('#betsSportFilter .conf-pill').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('#betsSportFilter .conf-pill').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      betsSportFilter = e.currentTarget.dataset.bsport;
+      renderUserBetsView();
+    });
+  });
+}
+
+const BETS_LOCAL_STORAGE_KEY = 'betpredict_user_bets_backup_v1';
+
+function _saveBetsToLocalStorage(state) {
+  if (!state) return;
+  try {
+    localStorage.setItem(BETS_LOCAL_STORAGE_KEY, JSON.stringify({
+      updated_at: state.updated_at || (Date.now() / 1000),
+      starting_capital: state.starting_capital,
+      currency: state.currency,
+      bets: state.bets || [],
+      deleted_ids: state.deleted_ids || [],
+    }));
+  } catch (e) {
+    // ignore storage quota errors
+  }
+}
+
+async function loadUserBets(forceRefresh = false) {
+  try {
+    let localBackup = null;
+    try {
+      const raw = localStorage.getItem(BETS_LOCAL_STORAGE_KEY);
+      if (raw) localBackup = JSON.parse(raw);
+    } catch (e) {
+      localBackup = null;
+    }
+
+    if (forceRefresh) {
+      const res = await fetch('/api/bets?refresh=true');
+      userBetsState = await res.json();
+    } else if (localBackup && Array.isArray(localBackup.bets) && localBackup.bets.length > 0) {
+      const res = await fetch('/api/bets/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(localBackup),
+      });
+      userBetsState = await res.json();
+    } else {
+      const res = await fetch('/api/bets');
+      userBetsState = await res.json();
+    }
+    _saveBetsToLocalStorage(userBetsState);
+    renderUserBetsView();
+  } catch (err) {
+    console.error('Error loading user bets:', err);
+  }
+}
+
+function _fmtMoney(val, curr = '€', forceSign = false) {
+  const num = Number(val || 0);
+  const sign = num > 0 && forceSign ? '+' : (num < 0 ? '-' : (forceSign ? '+' : ''));
+  return `${sign}${curr}${Math.abs(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function renderUserBetsView() {
+  if (!userBetsState) return;
+  _saveBetsToLocalStorage(userBetsState);
+  const s = userBetsState;
+  const curr = s.currency || '€';
+
+  // Nav badge count
+  const navBadge = document.getElementById('navBetsCount');
+  if (navBadge) {
+    const count = s.total_bets || 0;
+    navBadge.style.display = count > 0 ? 'inline-flex' : 'none';
+    navBadge.innerText = s.pending_count > 0 ? `${s.pending_count}⏳` : `${count}`;
+  }
+
+  const capInp = document.getElementById('inpStartingCapital');
+  if (capInp && document.activeElement !== capInp) {
+    capInp.value = s.starting_capital;
+  }
+  const currSel = document.getElementById('selBetsCurrency');
+  if (currSel) currSel.value = curr;
+
+  // KPI 2: Current Bankroll & Available Cash
+  const bankEl = document.getElementById('betStatBankroll');
+  if (bankEl) {
+    bankEl.innerText = _fmtMoney(s.current_bankroll, curr);
+    bankEl.style.color = s.current_bankroll >= s.starting_capital ? 'var(--primary)' : 'var(--accent-rose)';
+  }
+  const availEl = document.getElementById('betStatAvailable');
+  if (availEl) {
+    availEl.innerText = `Available: ${_fmtMoney(s.available_balance, curr)} • In play: ${_fmtMoney(s.pending_exposure, curr)}`;
+  }
+
+  // KPI 3: Net Profit & Growth %
+  const profEl = document.getElementById('betStatProfit');
+  if (profEl) {
+    const grSign = s.bankroll_growth_pct >= 0 ? '+' : '';
+    profEl.innerText = `${_fmtMoney(s.net_profit, curr, true)} (${grSign}${(s.bankroll_growth_pct * 100).toFixed(1)}%)`;
+    profEl.style.color = s.net_profit >= 0 ? 'var(--primary)' : 'var(--accent-rose)';
+  }
+  const roiEl = document.getElementById('betStatRoi');
+  if (roiEl) {
+    const rSign = s.roi_yield >= 0 ? '+' : '';
+    roiEl.innerText = `Yield / ROI: ${rSign}${(s.roi_yield * 100).toFixed(1)}% on ${_fmtMoney(s.total_staked_settled, curr)} settled`;
+  }
+
+  // KPI 4: Win Rate & Record
+  const wrEl = document.getElementById('betStatWinRate');
+  if (wrEl) {
+    wrEl.innerText = (s.won_count + s.lost_count) > 0 ? `${(s.win_rate * 100).toFixed(1)}%` : '-';
+  }
+  const recEl = document.getElementById('betStatRecord');
+  if (recEl) {
+    recEl.innerText = `${s.won_count}W – ${s.lost_count}L • ${s.pending_count} Pending • Avg win odds: ${s.avg_win_odds > 0 ? s.avg_win_odds.toFixed(2) : '-'}`;
+  }
+
+  // Table rows
+  const tbody = document.getElementById('userBetsRows');
+  if (!tbody) return;
+
+  let list = s.bets || [];
+  if (betsStatusFilter !== 'ALL') {
+    list = list.filter(b => b.status === betsStatusFilter);
+  }
+  if (betsSportFilter !== 'ALL') {
+    list = list.filter(b => b.sport === betsSportFilter);
+  }
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:2rem; color:var(--text-muted);">No recorded bets match this filter. Click <strong>➕ Bet</strong> on any match card in Football, NBA, Tennis, or Top 3 Safe!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(b => {
+    const isMulti = Boolean(b.is_multi && b.legs && b.legs.length >= 2);
+    const spIcon = isMulti ? '🎫' : (SPORT_ICONS[b.sport] || '🏆');
+    let pnlHtml = `<span style="color:var(--text-dim);">Pot: +${curr}${b.potential_profit.toFixed(2)}</span>`;
+    if (b.status === 'won') {
+      pnlHtml = `<strong style="color:var(--primary);">${_fmtMoney(b.settled_pnl, curr, true)}</strong>`;
+    } else if (b.status === 'lost') {
+      pnlHtml = `<strong style="color:var(--accent-rose);">${_fmtMoney(b.settled_pnl, curr, true)}</strong>`;
+    } else if (b.status === 'void') {
+      pnlHtml = `<span style="color:var(--text-muted);">${curr}0.00 (Void)</span>`;
+    }
+
+    let matchCellHtml = `
+      ${b.match}
+      ${b.score ? `<span class="badge badge-green" style="margin-left:0.3rem;">${b.score}</span>` : ''}
+    `;
+    let pickCellHtml = `🎯 ${b.pick}`;
+
+    if (isMulti) {
+      matchCellHtml = `
+        <div style="display:flex; flex-direction:column; gap:0.25rem;">
+          ${b.legs.map((l, li) => {
+            const lIcon = SPORT_ICONS[l.sport] || '⚽';
+            const lSt = l.status === 'won'
+              ? '<span style="color:var(--primary); font-weight:800;">✓</span>'
+              : (l.status === 'lost' ? '<span style="color:var(--accent-rose); font-weight:800;">✗</span>' : '<span style="color:var(--accent-blue);">⏳</span>');
+            return `<div style="font-size:0.76rem;"><strong>#${li + 1}</strong> ${lIcon} ${l.match} ${l.score ? `<span class="badge badge-blue" style="font-size:0.64rem; padding:0.06rem 0.35rem;">${l.score}</span>` : ''} ${lSt}</div>`;
+          }).join('')}
+        </div>
+      `;
+      pickCellHtml = `
+        <div style="display:flex; flex-direction:column; gap:0.25rem;">
+          ${b.legs.map(l => `<div style="font-size:0.76rem; color:var(--accent-blue);">🎯 <strong>${l.pick}</strong> <span style="color:var(--text-muted);">(@${Number(l.odds || 1).toFixed(2)})</span></div>`).join('')}
+        </div>
+      `;
+    }
+
+    return `
+      <tr data-betid="${b.id}">
+        <td style="text-align:center;">
+          <input type="checkbox" class="chk-merge-bet" data-id="${b.id}" title="Select to combine into a Multi-Bet">
+        </td>
+        <td style="white-space:nowrap;">
+          <input type="text" class="bet-inline-input inp-bet-date" data-id="${b.id}" value="${b.submitted_at || ''}" style="width:128px; font-weight:600; color:var(--text-muted);" title="Edit submission date">
+        </td>
+        <td style="white-space:nowrap;"><span class="badge ${isMulti ? 'badge-amber' : 'badge-blue'}">${spIcon} ${b.league}</span></td>
+        <td style="font-weight:600;">${matchCellHtml}</td>
+        <td style="font-weight:800; color:#fff;">${pickCellHtml}</td>
+        <td style="white-space:nowrap;">
+          <input type="number" step="0.01" min="1.01" class="bet-inline-input inp-bet-odds" data-id="${b.id}" value="${Number(b.odds).toFixed(2)}" title="Adjust real Stake/bookmaker total odds">
+        </td>
+        <td style="white-space:nowrap;">
+          <input type="number" step="0.5" min="0.5" class="bet-inline-input inp-bet-stake" data-id="${b.id}" value="${Number(b.stake).toFixed(2)}" title="Adjust stake amount">
+        </td>
+        <td style="font-weight:700; color:var(--accent-blue); white-space:nowrap;">${_fmtMoney(b.payout, curr)}</td>
+        <td style="white-space:nowrap;">${pnlHtml}</td>
+        <td style="white-space:nowrap;">
+          <div style="display:flex; align-items:center; gap:0.35rem;">
+            <select class="bet-status-select sel-bet-status" data-id="${b.id}" style="color:${b.status === 'won' ? '#34d399' : (b.status === 'lost' ? '#fb7185' : '#38bdf8')};">
+              <option value="pending" ${b.status === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+              <option value="won" ${b.status === 'won' ? 'selected' : ''}>✓ Won</option>
+              <option value="lost" ${b.status === 'lost' ? 'selected' : ''}>✗ Lost</option>
+              <option value="void" ${b.status === 'void' ? 'selected' : ''}>↺ Void</option>
+            </select>
+            <button type="button" class="pill-btn btn-del-bet" data-id="${b.id}" style="padding:0.2rem 0.42rem; color:var(--accent-rose); border-color:rgba(244,63,94,0.35);" title="Delete bet">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Wire inline edits for Odds, Stake, Submitted Date, Status, and Delete
+  tbody.querySelectorAll('.inp-bet-odds').forEach(inp => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const val = parseFloat(e.currentTarget.value);
+      if (val >= 1.01) {
+        const res = await fetch(`/api/bets/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ odds: val }),
+        });
+        userBetsState = await res.json();
+        renderUserBetsView();
+      }
+    });
+  });
+
+  tbody.querySelectorAll('.inp-bet-stake').forEach(inp => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const val = parseFloat(e.currentTarget.value);
+      if (val > 0) {
+        const res = await fetch(`/api/bets/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stake: val }),
+        });
+        userBetsState = await res.json();
+        renderUserBetsView();
+      }
+    });
+  });
+
+  tbody.querySelectorAll('.inp-bet-date').forEach(inp => {
+    inp.addEventListener('change', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const val = e.currentTarget.value.trim();
+      if (val) {
+        const res = await fetch(`/api/bets/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ submitted_at: val }),
+        });
+        userBetsState = await res.json();
+        renderUserBetsView();
+      }
+    });
+  });
+
+  tbody.querySelectorAll('.sel-bet-status').forEach(sel => {
+    sel.addEventListener('change', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const st = e.currentTarget.value;
+      const res = await fetch(`/api/bets/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: st }),
+      });
+      userBetsState = await res.json();
+      renderUserBetsView();
+    });
+  });
+
+  tbody.querySelectorAll('.btn-del-bet').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const res = await fetch(`/api/bets/${id}`, { method: 'DELETE' });
+      userBetsState = await res.json();
+      renderUserBetsView();
+    });
+  });
+
+  tbody.querySelectorAll('.chk-merge-bet').forEach(chk => {
+    chk.addEventListener('change', () => {
+      const n = document.querySelectorAll('.chk-merge-bet:checked').length;
+      const btnC = document.getElementById('btnCombineSelectedBets');
+      if (btnC) {
+        btnC.innerText = n >= 2 ? `🔗 Combine ${n} Selected into 1 Multi-Bet` : '🔗 Combine into 1 Multi-Bet';
+      }
+    });
+  });
+}
+
+function _updateMultiSlipPayout() {
+  const curr = userBetsState?.currency || '€';
+  const odds = parseFloat(document.getElementById('multiSlipOddsInput')?.value || 1) || 1;
+  const stake = parseFloat(document.getElementById('multiSlipStakeInput')?.value || 0) || 0;
+  const lbl = document.getElementById('multiSlipPayoutLbl');
+  if (lbl) lbl.innerText = `${curr}${(stake * odds).toFixed(2)}`;
+}
+
+function renderMultiBetSlipBar(recalcOdds = false) {
+  const bar = document.getElementById('multiBetSlipBar');
+  if (!bar) return;
+  if (multiBetSlipLegs.length === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'block';
+  document.getElementById('multiSlipCountLbl').innerText =
+    `${multiBetSlipLegs.length} Selection${multiBetSlipLegs.length > 1 ? 's' : ''}`;
+
+  const dateInp = document.getElementById('multiSlipDateInput');
+  if (dateInp && !dateInp.value) dateInp.value = _nowDateTimeInputStr();
+
+  if (recalcOdds) {
+    const comb = multiBetSlipLegs.reduce((acc, l) => acc * Number(l.odds || 1), 1.0);
+    const oddsInp = document.getElementById('multiSlipOddsInput');
+    if (oddsInp) oddsInp.value = comb.toFixed(2);
+  }
+
+  const listEl = document.getElementById('multiSlipLegsList');
+  if (listEl) {
+    listEl.innerHTML = multiBetSlipLegs.map((l, idx) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:#0b1120; border:1px solid var(--border-light); border-radius:6px; padding:0.28rem 0.55rem; font-size:0.75rem;">
+        <span><strong>#${idx + 1}</strong> ${l.match} &rarr; <strong style="color:var(--accent-blue);">${l.pick}</strong> (@${l.odds.toFixed(2)})</span>
+        <button type="button" class="pill-btn btn-rm-slip-leg" data-idx="${idx}" style="padding:0.08rem 0.35rem; font-size:0.68rem; color:var(--accent-rose);">✕</button>
+      </div>
+    `).join('');
+    listEl.querySelectorAll('.btn-rm-slip-leg').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const i = Number(e.currentTarget.dataset.idx);
+        multiBetSlipLegs.splice(i, 1);
+        renderMultiBetSlipBar(true);
+      });
+    });
+  }
+  _updateMultiSlipPayout();
 }

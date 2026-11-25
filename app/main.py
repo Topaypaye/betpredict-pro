@@ -10,12 +10,16 @@ Provides REST endpoints for:
 """
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
+import os
 import threading
+import time
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -98,6 +102,127 @@ class SimulateRequest(BaseModel):
     market_share: float | None = None
     stats_weights: dict[str, float] | None = None
     value_edge_min: float | None = None
+
+
+class BankrollCapitalRequest(BaseModel):
+    starting_capital: float
+    currency: str = "€"
+
+
+class AddBetRequest(BaseModel):
+    is_multi: bool = False
+    legs: list[dict[str, Any]] | None = None
+    espn_id: str | None = ""
+    sport: str = "football"
+    league: str = "Match"
+    league_name: str | None = None
+    match: str = "Multi-Bet"
+    home: str | None = ""
+    away: str | None = ""
+    kickoff: str | None = None
+    submitted_at: str | None = None
+    pick: str = "Multi-Bet"
+    pick_code: str = "CUSTOM"
+    odds: float = 1.5
+    stake: float = 10.0
+    status: str = "pending"
+    score: str | None = None
+
+
+class CombineBetsRequest(BaseModel):
+    bet_ids: list[str]
+    stake: float | None = None
+    odds: float | None = None
+    submitted_at: str | None = None
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+# ---------------------------------------------------------------- Minimalist Auth
+_AUTH_SECRET = os.environ.get("BETPREDICT_AUTH_SECRET", "betpredict_pro_hmac_2026_secret").encode("utf-8")
+_AUTH_COOKIE = "betpredict_session"
+_ACCOUNTS = {
+    "admin": ("Momonari3333sd*!", "admin"),
+    "Nawak": ("Nawak", "user"),
+}
+
+
+def _sign_session(username: str, role: str) -> str:
+    exp = int(time.time()) + 30 * 86400
+    payload = f"{username}|{role}|{exp}"
+    sig = hmac.new(_AUTH_SECRET, payload.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{payload}|{sig}"
+
+
+def _verify_session(token: str | None) -> dict[str, str] | None:
+    if not token:
+        return None
+    parts = token.split("|")
+    if len(parts) != 4:
+        return None
+    username, role, exp_str, sig = parts
+    try:
+        if int(exp_str) < int(time.time()):
+            return None
+    except ValueError:
+        return None
+    expected = hmac.new(_AUTH_SECRET, f"{username}|{role}|{exp_str}".encode("utf-8"), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(sig, expected):
+        return None
+    if username not in _ACCOUNTS or _ACCOUNTS[username][1] != role:
+        return None
+    return {"username": username, "role": role}
+
+
+def _require_admin(request: Request) -> dict[str, str]:
+    sess = _verify_session(request.cookies.get(_AUTH_COOKIE))
+    if not sess or sess.get("role") != "admin":
+        raise HTTPException(403, "Admin authentication required")
+    return sess
+
+
+@app.get("/api/auth/me")
+def auth_me(request: Request):
+    sess = _verify_session(request.cookies.get(_AUTH_COOKIE))
+    if not sess:
+        return {"authenticated": False, "username": None, "role": None}
+    return {"authenticated": True, **sess}
+
+
+@app.post("/api/auth/login")
+def auth_login(req: LoginRequest, response: Response):
+    u = req.username.strip()
+    acc = _ACCOUNTS.get(u)
+    if not acc or not hmac.compare_digest(req.password, acc[0]):
+        raise HTTPException(401, "Invalid username or password")
+    role = acc[1]
+    token = _sign_session(u, role)
+    response.set_cookie(
+        key=_AUTH_COOKIE,
+        value=token,
+        max_age=30 * 86400,
+        httponly=True,
+        samesite="lax",
+    )
+    return {"authenticated": True, "username": u, "role": role}
+
+
+@app.post("/api/auth/logout")
+def auth_logout(response: Response):
+    response.delete_cookie(_AUTH_COOKIE)
+    return {"authenticated": False}
+
+
+class UpdateBetRequest(BaseModel):
+    odds: float | None = None
+    stake: float | None = None
+    pick: str | None = None
+    submitted_at: str | None = None
+    status: str | None = None
+    score: str | None = None
 
 
 # ---------------------------------------------------------------- Core Status & Settings
@@ -411,6 +536,57 @@ def optimize_weights(req: SimulateRequest):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
+
+
+# ---------------------------------------------------------------- User Bet Tracker & Bankroll
+@app.get("/api/bets")
+def api_get_bets(request: Request, refresh: bool = Query(False)):
+    _require_admin(request)
+    from .bets import get_bets_state
+    return get_bets_state(force_refresh=refresh)
+
+
+@app.post("/api/bets/capital")
+def api_set_capital(req: BankrollCapitalRequest, request: Request):
+    _require_admin(request)
+    from .bets import set_bankroll_capital
+    return set_bankroll_capital(req.starting_capital, req.currency)
+
+
+@app.post("/api/bets")
+def api_add_bet(req: AddBetRequest, request: Request):
+    _require_admin(request)
+    from .bets import add_user_bet
+    return add_user_bet(req.dict())
+
+
+@app.post("/api/bets/combine")
+def api_combine_bets(req: CombineBetsRequest, request: Request):
+    _require_admin(request)
+    from .bets import combine_user_bets
+    return combine_user_bets(req.bet_ids, req.stake, req.odds, req.submitted_at)
+
+
+@app.post("/api/bets/{bet_id}")
+@app.patch("/api/bets/{bet_id}")
+def api_update_bet(bet_id: str, req: UpdateBetRequest, request: Request):
+    _require_admin(request)
+    from .bets import update_user_bet
+    return update_user_bet(bet_id, {k: v for k, v in req.dict().items() if v is not None})
+
+
+@app.delete("/api/bets/{bet_id}")
+def api_delete_bet(bet_id: str, request: Request):
+    _require_admin(request)
+    from .bets import delete_user_bet
+    return delete_user_bet(bet_id)
+
+
+@app.post("/api/bets/sync")
+def api_sync_bets(payload: dict[str, Any], request: Request):
+    _require_admin(request)
+    from .bets import sync_user_bets
+    return sync_user_bets(payload)
 
 
 # ---------------------------------------------------------------- Static Web App
